@@ -1,0 +1,489 @@
+// Prisma schema — Limitum: Stoic Decision Intelligence Platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────────────
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum SubscriptionTier {
+  FREE
+  PREMIUM
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+  INCOMPLETE
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum BitcoinInvoiceStatus {
+  PENDING
+  MEMPOOL
+  CONFIRMED
+  EXPIRED
+}
+
+enum CalculatorType {
+  FINANCIAL_PEACE
+  BURNOUT_RISK
+  RELATIONSHIP_SUSTAINABILITY
+  DECISION_REGRET
+  TIME_VALUE
+}
+
+enum AchievementType {
+  FIRST_CALCULATOR
+  ALL_CALCULATORS_DONE
+  SCORE_STABLE
+  SCORE_THRIVING
+  SCORE_FLOURISHING
+  STREAK_4_WEEKS
+  STREAK_8_WEEKS
+  STREAK_12_WEEKS
+  IMPROVED_10_POINTS
+  FIRST_REFLECTION
+  FIRST_GOAL
+  GOAL_REACHED
+  FIRST_SIMULATION
+}
+
+// ─────────────────────────────────────────────────────
+// USER
+// ─────────────────────────────────────────────────────
+
+model User {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  emailVerified     DateTime?
+  passwordHash      String?
+  name              String?
+  avatarUrl         String?
+  role              Role     @default(USER)
+  onboardingDone    Boolean  @default(false)
+  insightCredits    Int      @default(10)
+  twoFactorEnabled  Boolean  @default(false)
+  twoFactorSecret   String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  lastLoginAt       DateTime?
+
+  // Relations
+  accounts          Account[]
+  sessions          Session[]
+  profile           UserProfile?
+  assessments       Assessment[]
+  calculatorResults CalculatorResult[]
+  aiReflections     AiReflection[]
+  simulations       ScenarioSimulation[]
+  subscription      Subscription?
+  payments          Payment[]
+  trendHistory      TrendHistory[]
+  passwordResets    PasswordReset[]
+  bitcoinInvoices   BitcoinInvoice[]
+  weeklyCheckins     WeeklyCheckin[]
+  goals              UserGoal[]
+  achievements       Achievement[]
+  decisionJournals   DecisionJournal[]
+  morningIntentions  MorningIntention[]
+  virtueRatings      VirtueRating[]
+
+  @@index([email])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  provider          String
+  providerAccountId String
+  accessToken       String?
+  refreshToken      String?
+  expiresAt         Int?
+  tokenType         String?
+  scope             String?
+  idToken           String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  sessionToken String   @unique
+  expires      DateTime
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────────────
+// USER PROFILE (onboarding data)
+// ─────────────────────────────────────────────────────
+
+model UserProfile {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  ageRange            String?  // "18-25", "26-35", etc.
+  workType            String?  // "employee", "entrepreneur", "freelancer"
+  stressPerception    Int?     @default(5)  // 1–10
+  financialComfort    Int?     @default(5)
+  timeFreedom         Int?     @default(5)
+  relationshipSupport Int?     @default(5)
+  energyLevels        Int?     @default(5)
+  cognitiveLoad       Int?     @default(5)
+  majorResponsibilities String[] @default([])
+  goals               String[] @default([])
+  philosopherGuide    String?  @default("marcus") // "marcus" | "epictetus" | "seneca"
+  updatedAt           DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────────────
+// ASSESSMENTS
+// ─────────────────────────────────────────────────────
+
+model Assessment {
+  id              String   @id @default(cuid())
+  userId          String
+  peaceScore      Float
+  burnoutRisk     Float
+  financialStab   Float
+  emotionalRec    Float
+  timeFreedom     Float
+  cognitiveLoad   Float
+  decisionStab    Float
+  futureSustain   Float
+  overallScore    Float
+  rawInputs       Json
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────
+// CALCULATOR RESULTS
+// ─────────────────────────────────────────────────────
+
+model CalculatorResult {
+  id             String          @id @default(cuid())
+  userId         String
+  type           CalculatorType
+  inputs         Json
+  outputs        Json
+  score          Float
+  interpretation String
+  suggestions    String[]
+  createdAt      DateTime        @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+}
+
+// ─────────────────────────────────────────────────────
+// AI REFLECTIONS
+// ─────────────────────────────────────────────────────
+
+model AiReflection {
+  id          String   @id @default(cuid())
+  userId      String
+  prompt      String
+  reflection  String   @db.Text
+  modelUsed   String   @default("gpt-4o")
+  creditsUsed Int      @default(1)
+  context     Json?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────
+// SCENARIO SIMULATIONS
+// ─────────────────────────────────────────────────────
+
+model ScenarioSimulation {
+  id           String   @id @default(cuid())
+  userId       String
+  scenarioType String
+  title        String
+  parameters   Json
+  results      Json
+  projections  Json
+  creditsUsed  Int      @default(2)
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────
+// TREND HISTORY (longitudinal analytics)
+// ─────────────────────────────────────────────────────
+
+model TrendHistory {
+  id           String   @id @default(cuid())
+  userId       String
+  month        Int
+  year         Int
+  peaceScore   Float?
+  burnoutRisk  Float?
+  financialStab Float?
+  emotionalRec Float?
+  timeFreedom  Float?
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month, year])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────
+// SUBSCRIPTIONS
+// ─────────────────────────────────────────────────────
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  tier                 SubscriptionTier   @default(FREE)
+  status               SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments Payment[]
+
+  @@index([stripeCustomerId])
+}
+
+// ─────────────────────────────────────────────────────
+// PAYMENTS
+// ─────────────────────────────────────────────────────
+
+model Payment {
+  id               String        @id @default(cuid())
+  userId           String
+  subscriptionId   String?
+  stripePaymentId  String?       @unique
+  amount           Int           // in cents
+  currency         String        @default("usd")
+  status           PaymentStatus @default(PENDING)
+  description      String?
+  metadata         Json?
+  createdAt        DateTime      @default(now())
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id])
+
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────
+// BITCOIN INVOICES
+// ─────────────────────────────────────────────────────
+
+model BitcoinInvoice {
+  id           String               @id
+  userId       String
+  plan         String               // e.g. "premium_monthly"
+  usdAmount    Int                  // in cents
+  btcAddress   String
+  satoshis     Int                  // exact satoshis to send (base + unique nonce)
+  status       BitcoinInvoiceStatus @default(PENDING)
+  txid         String?
+  confirmedAt  DateTime?
+  expiresAt    DateTime
+  createdAt    DateTime             @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────
+// WEEKLY CHECK-INS (streak system)
+// ─────────────────────────────────────────────────────
+
+model WeeklyCheckin {
+  id               String   @id @default(cuid())
+  userId           String
+  weekKey          String   // "2026-W19" ISO format
+  financialMood    Int      // 1–10
+  burnoutMood      Int
+  relationshipMood Int
+  decisionMood     Int
+  timeMood         Int
+  note             String?
+  createdAt        DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekKey])
+  @@index([userId])
+  @@map("weekly_checkins")
+}
+
+// ─────────────────────────────────────────────────────
+// USER GOALS (per-calculator targets)
+// ─────────────────────────────────────────────────────
+
+model UserGoal {
+  id             String         @id @default(cuid())
+  userId         String
+  calculatorType CalculatorType
+  targetScore    Int
+  startScore     Float?
+  targetDate     DateTime?
+  reachedAt      DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, calculatorType])
+  @@index([userId])
+  @@map("user_goals")
+}
+
+// ─────────────────────────────────────────────────────
+// ACHIEVEMENTS (Stoic milestone badges)
+// ─────────────────────────────────────────────────────
+
+model Achievement {
+  id         String          @id @default(cuid())
+  userId     String
+  type       AchievementType
+  unlockedAt DateTime        @default(now())
+  metadata   Json?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+  @@index([userId])
+  @@map("achievements")
+}
+
+// ─────────────────────────────────────────────────────
+// DECISION JOURNAL
+// ─────────────────────────────────────────────────────
+
+model DecisionJournal {
+  id            String    @id @default(cuid())
+  userId        String
+  title         String
+  context       String    @db.Text
+  options       Json
+  decisionScore      Float?
+  chosenOption       String?
+  outcome            String?   @db.Text
+  outcomeDate        DateTime?
+  controlCategory    String?   // "in_control" | "partial" | "outside_control"
+  premeditatio       String?   @db.Text  // negative visualisation notes
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("decision_journals")
+}
+
+// ─────────────────────────────────────────────────────
+// MORNING INTENTIONS (daily Stoic ritual)
+// ─────────────────────────────────────────────────────
+
+model MorningIntention {
+  id             String   @id @default(cuid())
+  userId         String
+  dateKey        String   // "2026-05-12" ISO date
+  intention      String   @db.Text   // What I intend to do
+  acceptanceFocus String  @db.Text   // What outside my control I will accept
+  virtue         String             // Which virtue to practice today
+  completed      Boolean  @default(false)
+  completedNote  String?  @db.Text   // Evening reflection
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dateKey])
+  @@index([userId])
+  @@map("morning_intentions")
+}
+
+// ─────────────────────────────────────────────────────
+// VIRTUE RATINGS (weekly Stoic virtue self-assessment)
+// ─────────────────────────────────────────────────────
+
+model VirtueRating {
+  id          String   @id @default(cuid())
+  userId      String
+  weekKey     String   // "2026-W19"
+  wisdom      Int      // 1–10
+  courage     Int
+  justice     Int
+  temperance  Int
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekKey])
+  @@index([userId])
+  @@map("virtue_ratings")
+}
