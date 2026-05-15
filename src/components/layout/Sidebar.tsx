@@ -23,6 +23,7 @@ import {
   NotebookPen,
   Sun,
   Compass,
+  Activity,
 } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -52,6 +53,12 @@ const navItems = [
     label: "Check-in",
     icon: Flame,
     description: "Weekly streak & pulse",
+  },
+  {
+    href: "/pulse",
+    label: "Daily Pulse",
+    icon: Activity,
+    description: "5-dimension daily check-in",
   },
   {
     href: "/intention",
@@ -117,7 +124,7 @@ function NavContent({
       {/* Logo */}
       <div className="flex items-center gap-3 px-6 py-6 border-b border-stone-100">
         <div className="w-8 h-8 bg-gradient-to-br from-soft-gold to-brand-600 rounded-xl flex items-center justify-center flex-shrink-0">
-          <span className="text-white font-bold text-sm">L</span>
+          <span className="text-white font-bold text-sm">C</span>
         </div>
         {!collapsed && (
           <span className="font-serif font-semibold text-lg text-matte-black">Constavita</span>
