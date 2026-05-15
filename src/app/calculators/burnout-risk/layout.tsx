@@ -4,6 +4,36 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "What is a burnout risk calculator?",
+          acceptedAnswer: { "@type": "Answer", text: "A burnout risk calculator measures your resilience across nine evidence-based dimensions: workload intensity, recovery quality, sleep adequacy, exercise frequency, perceived stress, autonomy and control, purpose alignment, social support, and work-life boundary strength. Each dimension is scored and weighted to produce a composite Burnout Resilience Index from 0–100. Higher scores mean greater resilience, not greater risk." },
+        },
+        {
+          "@type": "Question",
+          name: "What is a good burnout resilience score?",
+          acceptedAnswer: { "@type": "Answer", text: "A score of 75–100 indicates a genuinely sustainable work rhythm with strong recovery habits. 55–74 is functional but shows clear areas to improve before depletion accumulates. Below 55 signals elevated burnout risk — one or more dimensions are structurally unsustainable. Below 40 represents high risk requiring immediate attention to workload, sleep, or autonomy." },
+        },
+        {
+          "@type": "Question",
+          name: "How many hours of work per week causes burnout?",
+          acceptedAnswer: { "@type": "Answer", text: "Stanford research shows productivity per hour drops sharply after 50 hours per week and becomes negligible beyond 55 hours. Chronically working 60+ hours per week is a strong burnout predictor, particularly when combined with low autonomy or poor sleep. The burnout calculator weights hours in the context of recovery quality — someone working 55 hours with excellent sleep and autonomy may score significantly better than someone working 45 hours with chronic poor sleep and high perceived stress." },
+        },
+        {
+          "@type": "Question",
+          name: "Can you recover from burnout?",
+          acceptedAnswer: { "@type": "Answer", text: "Yes, burnout is recoverable, but recovery follows a logarithmic curve — not a linear one. Initial improvement after reducing workload or improving sleep can be rapid, but full restoration of cognitive and emotional capacity from severe burnout typically takes 6–18 months of sustained low stress. This is why prevention — measured through a regular burnout risk score — is far more effective than recovery as a strategy." },
+        },
+        {
+          "@type": "Question",
+          name: "Is the burnout risk calculator free?",
+          acceptedAnswer: { "@type": "Answer", text: "Yes, the Burnout Risk Calculator is completely free with no credit card required. You can run the assessment as many times as needed and save your score history with a free account to track your resilience trend over time." },
+        },
+      ],
+    },
+    {
       "@type": "WebApplication",
       name: "Burnout Risk Calculator",
       url: "https://constavita.com/calculators/burnout-risk",

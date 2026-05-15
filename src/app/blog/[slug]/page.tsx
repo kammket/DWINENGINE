@@ -81,41 +81,53 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   // JSON-LD — BlogPosting with Person author schema for E-E-A-T
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: post.metaTitle,
-    description: post.metaDescription,
-    author: {
-      "@type": "Person",
-      name: post.author,
-      url: `https://constavita.com/blog/author/${post.authorSlug}`,
-      jobTitle: author?.role,
-      knowsAbout: author?.expertise,
-      worksFor: {
-        "@type": "Organization",
-        name: "Constavita",
-        url: "https://constavita.com",
+    "@graph": [
+      {
+        "@type": "BlogPosting",
+        headline: post.metaTitle,
+        description: post.metaDescription,
+        author: {
+          "@type": "Person",
+          name: post.author,
+          url: `https://constavita.com/blog/author/${post.authorSlug}`,
+          jobTitle: author?.role,
+          knowsAbout: author?.expertise,
+          worksFor: {
+            "@type": "Organization",
+            name: "Constavita",
+            url: "https://constavita.com",
+          },
+        },
+        publisher: {
+          "@type": "Organization",
+          name: "Constavita",
+          url: "https://constavita.com",
+          logo: {
+            "@type": "ImageObject",
+            url: "https://constavita.com/logo.png",
+          },
+        },
+        datePublished: post.publishedAt,
+        dateModified: post.updatedAt ?? post.publishedAt,
+        url: `https://constavita.com/blog/${post.slug}`,
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": `https://constavita.com/blog/${post.slug}`,
+        },
+        keywords: post.keywords.join(", "),
+        articleSection: post.category,
+        wordCount: post.content.replace(/<[^>]+>/g, "").split(/\s+/).length,
+        timeRequired: `PT${post.readingTime}M`,
       },
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "Constavita",
-      url: "https://constavita.com",
-      logo: {
-        "@type": "ImageObject",
-        url: "https://constavita.com/logo.png",
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: "https://constavita.com" },
+          { "@type": "ListItem", position: 2, name: "Blog", item: "https://constavita.com/blog" },
+          { "@type": "ListItem", position: 3, name: post.title, item: `https://constavita.com/blog/${post.slug}` },
+        ],
       },
-    },
-    datePublished: post.publishedAt,
-    dateModified: post.updatedAt ?? post.publishedAt,
-    url: `https://constavita.com/blog/${post.slug}`,
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `https://constavita.com/blog/${post.slug}`,
-    },
-    keywords: post.keywords.join(", "),
-    articleSection: post.category,
-    wordCount: post.content.replace(/<[^>]+>/g, "").split(/\s+/).length,
-    timeRequired: `PT${post.readingTime}M`,
+    ],
   };
 
   return (

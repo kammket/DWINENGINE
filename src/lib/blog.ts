@@ -44,7 +44,7 @@ export const BLOG_POSTS: BlogPost[] = [
     relatedCalculator: { label: "Calculate Your Burnout Risk Index", href: "/calculators/burnout-risk" },
     content: `
 <h2>Why Most Burnout Conversations Start Too Late</h2>
-<p>By the time someone identifies their burnout, they are typically already deep inside it. The World Health Organisation recognised burnout as an occupational phenomenon in 2019, defining it as a syndrome arising from chronic workplace stress that has not been successfully managed. Its three hallmarks: exhaustion, growing detachment from work, and reduced professional efficacy.</p>
+<p>By the time someone identifies their burnout, they are typically already deep inside it. The <a href="https://www.who.int/news/item/28-05-2019-burn-out-an-occupational-phenomenon-international-classification-of-diseases" target="_blank" rel="noopener noreferrer">World Health Organisation recognised burnout as an occupational phenomenon in 2019</a>, defining it as a syndrome arising from chronic workplace stress that has not been successfully managed. Its three hallmarks: exhaustion, growing detachment from work, and reduced professional efficacy.</p>
 <p>What the definition misses is the <em>gradient</em>. Burnout does not arrive overnight. It accumulates across months of sub-threshold stress, compromised sleep, eroding autonomy, and disconnection from purpose — none of which feel individually alarming. This is precisely why a quantitative burnout risk score is so valuable. It turns a vague sense of dread into a number you can act on.</p>
 
 <h2>What a Burnout Risk Score Actually Measures</h2>
@@ -76,7 +76,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>If three or more of these apply, your burnout risk is already elevated. A score below 55 on the Burnout Resilience Index correlates strongly with these patterns.</p>
 
 <h2>The Recovery Deficit: Why Sleep Alone Is Not Enough</h2>
-<p>A common misconception is that a week's holiday or a few good nights of sleep can clear burnout. Recovery science tells a different story. Research published in the <em>Journal of Occupational Health Psychology</em> demonstrates that recovery from chronic burnout follows a logarithmic curve — initial improvement is rapid, but full restoration of cognitive and emotional capacity can take 12–18 months of sustained low stress.</p>
+<p>A common misconception is that a week's holiday or a few good nights of sleep can clear burnout. Recovery science tells a different story. Research published in the <a href="https://www.apa.org/pubs/journals/ocp" target="_blank" rel="noopener noreferrer"><em>Journal of Occupational Health Psychology</em></a> demonstrates that recovery from chronic burnout follows a logarithmic curve — initial improvement is rapid, but full restoration of cognitive and emotional capacity can take 12–18 months of sustained low stress.</p>
 <p>This is why prevention, not recovery, is the correct frame. A burnout risk calculator gives you the early warning to act before the deficit compounds.</p>
 <p>The four pillars of sustainable recovery capacity are:</p>
 <ol>
@@ -160,7 +160,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>This single habit eliminates a class of regret: the regret born from holding yourself responsible for outcomes that were never within your power to guarantee.</p>
 
 <h2>Premeditatio Malorum: The Stoic Pre-mortem</h2>
-<p>The Stoic practice of <em>premeditatio malorum</em> — the premeditation of adversity — is the ancient precursor to the modern "pre-mortem" popularised by psychologist Gary Klein. The method:</p>
+<p>The Stoic practice of <em>premeditatio malorum</em> — the premeditation of adversity — is the ancient precursor to the modern <a href="https://hbr.org/2007/09/performing-a-project-premortem" target="_blank" rel="noopener noreferrer">"pre-mortem" popularised by psychologist Gary Klein</a>. The method:</p>
 <ol>
   <li>Assume the decision produces the worst possible outcome</li>
   <li>Work backwards: exactly how did that happen?</li>
@@ -241,7 +241,7 @@ export const BLOG_POSTS: BlogPost[] = [
     relatedCalculator: { label: "Calculate Your Financial Peace Score", href: "/calculators/financial-peace" },
     content: `
 <h2>Why High Earners Still Feel Financially Anxious</h2>
-<p>One of the most consistent findings in financial psychology is that income, beyond a threshold sufficient to meet basic needs and security, correlates surprisingly weakly with financial wellbeing. The American Psychological Association's annual "Stress in America" survey consistently places money as the leading source of stress — not for the unemployed or the indebted, but across all income brackets.</p>
+<p>One of the most consistent findings in financial psychology is that income, beyond a threshold sufficient to meet basic needs and security, correlates surprisingly weakly with financial wellbeing. The <a href="https://www.apa.org/news/press/releases/stress" target="_blank" rel="noopener noreferrer">American Psychological Association's annual "Stress in America" survey</a> consistently places money as the leading source of stress — not for the unemployed or the indebted, but across all income brackets.</p>
 <p>The explanation lies in a measurement problem. The financial metrics our culture emphasises — net worth, annual income, savings balance — are balance-sheet metrics. They tell you what you have. They say nothing about your relationship with money, your capacity to absorb financial shocks, or your sense of security and sufficiency.</p>
 <p>Financial peace is not an amount. It is a state of being that exists — or doesn't — independent of the number in your account.</p>
 
@@ -261,7 +261,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>What fraction of your income goes to fixed expenses? Financial peace research consistently shows that the "50/30/20" rule (50% needs, 30% wants, 20% savings) produces better wellbeing outcomes than income maximisation alone. When expenses consume over 90% of income, financial anxiety is nearly universal regardless of absolute income level.</p>
 
 <h3>2. Emergency Fund Adequacy</h3>
-<p>The Federal Reserve's annual "Report on the Economic Well-Being of US Households" finds that inability to cover a $400 emergency is one of the strongest predictors of financial stress — more predictive than income itself. Three months of expenses produces a meaningful stress reduction; six months represents genuine psychological security for most people.</p>
+<p>The <a href="https://www.federalreserve.gov/publications/report-economic-well-being-us-households.htm" target="_blank" rel="noopener noreferrer">Federal Reserve's annual "Report on the Economic Well-Being of US Households"</a> finds that inability to cover a $400 emergency is one of the strongest predictors of financial stress — more predictive than income itself. Three months of expenses produces a meaningful stress reduction; six months represents genuine psychological security for most people.</p>
 <p>The emergency fund is not just a financial buffer. It is a psychological buffer. Its existence changes how you experience risk in all other areas of life.</p>
 
 <h3>3. Debt Health</h3>
@@ -345,8 +345,8 @@ export const BLOG_POSTS: BlogPost[] = [
 <h2>What Work-Life Balance Actually Predicts</h2>
 <p>Work-life balance is not primarily a scheduling concept — it is a <em>wellbeing predictor</em>. The research on this is consistent across decades and populations:</p>
 <ul>
-  <li>A meta-analysis of 85 studies published in the <em>Journal of Vocational Behavior</em> found that work-life conflict was a stronger predictor of burnout, health complaints, and job dissatisfaction than workload alone.</li>
-  <li>Stanford research by John Pencavel found that productivity per hour drops sharply after 50 hours of work per week and effectively reaches zero beyond 55 hours — making overwork a self-defeating strategy even by pure output metrics.</li>
+  <li>A <a href="https://www.sciencedirect.com/journal/journal-of-vocational-behavior" target="_blank" rel="noopener noreferrer">meta-analysis of 85 studies published in the <em>Journal of Vocational Behavior</em></a> found that work-life conflict was a stronger predictor of burnout, health complaints, and job dissatisfaction than workload alone.</li>
+  <li><a href="https://siepr.stanford.edu/publications/working-paper/penultimate-hours-work-and-output-work-schedules-munitions" target="_blank" rel="noopener noreferrer">Stanford research by John Pencavel</a> found that productivity per hour drops sharply after 50 hours of work per week and effectively reaches zero beyond 55 hours — making overwork a self-defeating strategy even by pure output metrics.</li>
   <li>Harvard Business School research found that managers could not distinguish performance between employees working 80 hours per week and those faking it — suggesting the productivity narrative around extreme hours is largely mythological.</li>
 </ul>
 <p>What this means practically: work-life balance is not a lifestyle preference. It is a performance variable. The question is not whether to pursue it, but how to measure it well enough to act on it.</p>
@@ -364,7 +364,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>Time spent on learning, skill development, and reflection is one of the strongest predictors of long-term career satisfaction and life meaning. The standard of 5 hours of deliberate learning per week — popularised by Michael Simmons as the "5-hour rule" and practiced by virtually every documented high-performer across history — is the benchmark.</p>
 
 <h3>4. Social Connection Quality</h3>
-<p>The Harvard Study of Adult Development — the longest running study of adult life ever conducted — found that the quality of social relationships was the single strongest predictor of late-life happiness and health. Not wealth, not fame, not professional achievement. Connection. Time budget analysis frequently reveals that high-achievers systematically underfund this dimension.</p>
+<p>The <a href="https://www.adultdevelopmentstudy.org/" target="_blank" rel="noopener noreferrer">Harvard Study of Adult Development</a> — the longest running study of adult life ever conducted — found that the quality of social relationships was the single strongest predictor of late-life happiness and health. Not wealth, not fame, not professional achievement. Connection. Time budget analysis frequently reveals that high-achievers systematically underfund this dimension.</p>
 
 <h3>5. Leisure and Recovery</h3>
 <p>Not all leisure is equally restorative. Passive leisure — scrolling, watching television — produces minimal recovery benefit. Active leisure — a sport, a creative hobby, time in nature — produces the psychological detachment that allows the nervous system to genuinely recover. The distinction matters enormously when assessing whether your "leisure time" is actually restoring you.</p>
@@ -426,7 +426,7 @@ export const BLOG_POSTS: BlogPost[] = [
 <p>When that pool runs low, decision quality degrades in predictable ways: you default to whatever requires the least effort, you avoid choosing altogether, or you make impulsive choices that trade long-term benefit for immediate relief. What feels like laziness or irrationality in the afternoon is often simply a depleted decision-making capacity.</p>
 
 <h2>The Evidence: Decision Fatigue Is Real and Measurable</h2>
-<p>The most striking evidence for decision fatigue comes from a now-famous study of Israeli parole board judges published in <em>PNAS</em> (2011). Researchers analysed 1,112 parole decisions across a full day. The findings were stark:</p>
+<p>The most striking evidence for decision fatigue comes from a <a href="https://www.pnas.org/doi/10.1073/pnas.1018033108" target="_blank" rel="noopener noreferrer">now-famous study of Israeli parole board judges published in <em>PNAS</em> (2011)</a>. Researchers analysed 1,112 parole decisions across a full day. The findings were stark:</p>
 <ul>
   <li>Prisoners had roughly a 65% chance of parole approval at the start of a session</li>
   <li>By the end of a session, before a food break, approval rates dropped to near zero</li>
@@ -522,7 +522,7 @@ export const BLOG_POSTS: BlogPost[] = [
     content: `
 <h2>Why Relationship Satisfaction Is the Wrong Metric</h2>
 <p>Most people assess their relationships by asking a single question: "Am I happy right now?" This is a reasonable question, but it is the wrong unit of analysis for understanding whether a relationship is healthy and sustainable over time.</p>
-<p>Research by John Gottman — who has studied relationships longitudinally for over 40 years — demonstrates that current satisfaction is a poor predictor of relationship durability. Couples with moderate satisfaction who score high on specific interaction quality metrics consistently out-survive couples with high current satisfaction who score low on those same metrics.</p>
+<p><a href="https://www.gottman.com/about/research/" target="_blank" rel="noopener noreferrer">Research by John Gottman</a> — who has studied relationships longitudinally for over 40 years — demonstrates that current satisfaction is a poor predictor of relationship durability. Couples with moderate satisfaction who score high on specific interaction quality metrics consistently out-survive couples with high current satisfaction who score low on those same metrics.</p>
 <p>The implication: the question that matters is not "How happy am I?" but "What is the structural quality of how we relate?"</p>
 
 <h2>The Gottman Research Basis</h2>

@@ -6,27 +6,53 @@ import { ArrowRight, Clock, Tag } from "lucide-react";
 
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "Blog",
-  "@id": "https://constavita.com/blog",
-  name: "Constavita Journal",
-  description: "Evidence-based articles on burnout prevention, Stoic decision making, financial peace, and sustainable work-life balance.",
-  url: "https://constavita.com/blog",
-  publisher: {
-    "@type": "Organization",
-    name: "Constavita",
-    url: "https://constavita.com",
-    logo: { "@type": "ImageObject", url: "https://constavita.com/logo.png" },
-  },
-  blogPost: BLOG_POSTS.map((post) => ({
-    "@type": "BlogPosting",
-    headline: post.metaTitle,
-    url: `https://constavita.com/blog/${post.slug}`,
-    datePublished: post.publishedAt,
-    dateModified: post.updatedAt ?? post.publishedAt,
-    description: post.metaDescription,
-    author: { "@type": "Organization", name: post.author },
-    keywords: post.keywords.join(", "),
-  })),
+  "@graph": [
+    {
+      "@type": "Blog",
+      "@id": "https://constavita.com/blog",
+      name: "Constavita Journal",
+      description: "Evidence-based articles on burnout prevention, Stoic decision making, financial peace, and sustainable work-life balance.",
+      url: "https://constavita.com/blog",
+      publisher: {
+        "@type": "Organization",
+        name: "Constavita",
+        url: "https://constavita.com",
+        logo: { "@type": "ImageObject", url: "https://constavita.com/logo.png" },
+      },
+      blogPost: BLOG_POSTS.map((post) => ({
+        "@type": "BlogPosting",
+        headline: post.metaTitle,
+        url: `https://constavita.com/blog/${post.slug}`,
+        datePublished: post.publishedAt,
+        dateModified: post.updatedAt ?? post.publishedAt,
+        description: post.metaDescription,
+        author: { "@type": "Person", name: post.author },
+        keywords: post.keywords.join(", "),
+      })),
+    },
+    {
+      "@type": "ItemList",
+      name: "Latest Articles from Constavita Journal",
+      url: "https://constavita.com/blog",
+      numberOfItems: BLOG_POSTS.length,
+      itemListElement: [...BLOG_POSTS]
+        .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+        .map((post, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          name: post.metaTitle,
+          url: `https://constavita.com/blog/${post.slug}`,
+          description: post.metaDescription,
+        })),
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: "https://constavita.com" },
+        { "@type": "ListItem", position: 2, name: "Blog", item: "https://constavita.com/blog" },
+      ],
+    },
+  ],
 };
 
 export const metadata: Metadata = {
