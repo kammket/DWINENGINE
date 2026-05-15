@@ -53,7 +53,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
                 color: "white",
               }}
             >
-              L
+              C
             </div>
             <span style={{ fontSize: "20px", fontWeight: "600", color: "#FAF9F6", fontFamily: "serif" }}>
               Constavita

@@ -22,7 +22,7 @@ export default function Icon() {
           fontFamily: "serif",
         }}
       >
-        L
+        C
       </div>
     ),
     { ...size }

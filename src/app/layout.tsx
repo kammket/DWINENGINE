@@ -1,8 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#C9A84C",
+};
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const playfair = Playfair_Display({
@@ -45,6 +51,7 @@ export const metadata: Metadata = {
     creator: "@constavita_ai",
     title: "Constavita — AI-Powered Decision Intelligence",
     description: "Evaluate life decisions with Stoic wisdom and explainable AI.",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Constavita — AI-Powered Decision Intelligence" }],
   },
   robots: {
     index: true,
@@ -66,6 +73,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+      <head>
+        <link rel="dns-prefetch" href="https://js.stripe.com" />
+        <link rel="preconnect" href="https://js.stripe.com" />
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          href="https://constavita.com/feed.xml"
+          title="Constavita Blog RSS Feed"
+        />
+      </head>
       <body className="bg-warm-white text-matte-black antialiased">
         <AuthProvider>
           {children}

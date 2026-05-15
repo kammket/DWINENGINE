@@ -43,7 +43,7 @@ export default function Image() {
               color: "white",
             }}
           >
-            L
+            C
           </div>
           <span style={{ fontSize: "22px", fontWeight: "600", color: "#1C1C1E", fontFamily: "serif" }}>Constavita</span>
         </div>
