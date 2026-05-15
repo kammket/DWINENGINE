@@ -51,6 +51,7 @@ export default function LoginPage() {
     const result = await login(email, password);
     if (result.success) {
       toast.success("Welcome back.");
+      router.refresh();
       router.push("/dashboard");
     } else {
       toast.error(result.error || "Login failed.");
@@ -89,6 +90,7 @@ export default function LoginPage() {
       if (authJson.success) {
         await refreshUser();
         toast.success("Signed in with MetaMask.");
+        router.refresh();
         router.push(authJson.isNewUser ? "/onboarding" : "/dashboard");
       } else if (authJson.error === "wallet_not_found") {
         // Wallet not linked to any account — go to register with address pre-filled

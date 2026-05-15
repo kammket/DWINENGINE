@@ -74,6 +74,7 @@ function RegisterForm() {
     const result = await register(name, email, password);
     if (result.success) {
       toast.success("Account created. Let's calibrate your baseline.");
+      router.refresh();
       router.push("/onboarding");
     } else {
       toast.error(result.error || "Registration failed.");
@@ -134,6 +135,7 @@ function RegisterForm() {
       if (json.success) {
         await refreshUser();
         toast.success("Account created with wallet.");
+        router.refresh();
         router.push("/onboarding");
       } else {
         toast.error(json.error || "Registration failed.");
