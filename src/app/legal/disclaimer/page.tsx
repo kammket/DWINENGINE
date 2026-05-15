@@ -1,7 +1,7 @@
 import { PublicHeader, Footer } from "@/components/layout/PublicLayout";
 
 export const metadata = {
-  title: "Legal Disclaimer — Limitum",
+  title: "Legal Disclaimer — Constavita",
 };
 
 export default function DisclaimerPage() {
@@ -15,7 +15,7 @@ export default function DisclaimerPage() {
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-8">
           <p className="text-sm font-semibold text-amber-800 mb-1">Important Notice</p>
           <p className="text-sm text-amber-700">
-            Limitum provides <strong>educational self-reflection tools only</strong>. Nothing on this platform
+            Constavita provides <strong>educational self-reflection tools only</strong>. Nothing on this platform
             constitutes financial, medical, psychological, legal, or professional advice of any kind.
           </p>
         </div>
@@ -24,7 +24,7 @@ export default function DisclaimerPage() {
           <section>
             <h2 className="font-serif text-xl font-bold mb-2">Not Financial Advice</h2>
             <p>
-              The Financial Peace Calculator and all financial indices produced by Limitum are educational tools
+              The Financial Peace Calculator and all financial indices produced by Constavita are educational tools
               designed to promote self-awareness. They are not financial advice, investment recommendations,
               tax guidance, or financial planning services. Always consult a qualified financial advisor,
               accountant, or financial planner before making financial decisions.

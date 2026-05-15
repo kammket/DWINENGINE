@@ -4,14 +4,14 @@ import { PublicHeader, Footer } from "@/components/layout/PublicLayout";
 import { Mail, MessageSquare, Shield, BookOpen } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Contact — Limitum",
+  title: "Contact — Constavita",
   description:
-    "Get in touch with the Limitum team. We respond to all enquiries within one business day.",
-  alternates: { canonical: "https://limitum.ai/contact" },
+    "Get in touch with the Constavita team. We respond to all enquiries within one business day.",
+  alternates: { canonical: "https://constavita.com/contact" },
   openGraph: {
-    title: "Contact — Limitum",
-    description: "Reach the Limitum team. Support, feedback, press, and partnerships.",
-    url: "https://limitum.ai/contact",
+    title: "Contact — Constavita",
+    description: "Reach the Constavita team. Support, feedback, press, and partnerships.",
+    url: "https://constavita.com/contact",
     type: "website",
   },
 };
@@ -21,19 +21,19 @@ const TOPICS = [
     icon: MessageSquare,
     title: "General support",
     description: "Questions about how the calculators work, your scores, or using the platform.",
-    email: "hello@limitum.ai",
+    email: "hello@constavita.com",
   },
   {
     icon: Shield,
     title: "Privacy & data",
     description: "GDPR requests, data deletion, account access, or security concerns.",
-    email: "privacy@limitum.ai",
+    email: "privacy@constavita.com",
   },
   {
     icon: BookOpen,
     title: "Press & partnerships",
     description: "Media enquiries, research collaborations, or partnership opportunities.",
-    email: "press@limitum.ai",
+    email: "press@constavita.com",
   },
 ];
 

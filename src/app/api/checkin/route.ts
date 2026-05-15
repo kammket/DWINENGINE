@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
+import { historyDateCutoff } from "@/lib/tier";
 
 function getWeekKey(date = new Date()): string {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -54,17 +55,28 @@ export async function GET(req: NextRequest) {
   const session = await requireAuth(req);
   if (session instanceof NextResponse) return session;
 
-  const checkins = await prisma.weeklyCheckin.findMany({
-    where: { userId: session.userId },
-    orderBy: { createdAt: "desc" },
-    take: 52,
-  });
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { subscription: { select: { tier: true } } },
+    });
+    const cutoff = historyDateCutoff(user?.subscription?.tier);
 
-  const currentWeekKey = getWeekKey();
-  const thisWeek = checkins.find((c) => c.weekKey === currentWeekKey) ?? null;
-  const streak = computeStreak(checkins);
+    const checkins = await prisma.weeklyCheckin.findMany({
+      where: { userId: session.userId, ...(cutoff ? { createdAt: { gte: cutoff } } : {}) },
+      orderBy: { createdAt: "desc" },
+      take: 52,
+    });
 
-  return NextResponse.json({ success: true, streak, thisWeek, history: checkins });
+    const currentWeekKey = getWeekKey();
+    const thisWeek = checkins.find((c) => c.weekKey === currentWeekKey) ?? null;
+    const streak = computeStreak(checkins);
+
+    return NextResponse.json({ success: true, streak, thisWeek, history: checkins });
+  } catch (err) {
+    console.error("Checkin GET error:", err);
+    return NextResponse.json({ success: false, streak: 0, thisWeek: null, history: [] }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {

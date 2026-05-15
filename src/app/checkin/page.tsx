@@ -5,9 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { DashboardLayout } from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/Button";
 import {
-  Flame, CheckCircle2, Circle, ChevronRight, Sparkles,
+  Flame, CheckCircle2, ChevronRight, Sparkles,
   DollarSign, Brain, Heart, Lightbulb, Clock,
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 import toast from "react-hot-toast";
 
 type WeeklyCheckin = {
@@ -35,7 +36,8 @@ const SLIDERS = [
     icon: DollarSign,
     description: "How stable and secure do you feel financially right now?",
     color: "text-blue-600",
-    track: "bg-blue-500",
+    fill: "#3B82F6",
+    track: "bg-blue-100",
   },
   {
     key: "burnoutMood" as const,
@@ -43,7 +45,8 @@ const SLIDERS = [
     icon: Brain,
     description: "How rested and energised are you this week?",
     color: "text-orange-600",
-    track: "bg-orange-500",
+    fill: "#F97316",
+    track: "bg-orange-100",
   },
   {
     key: "relationshipMood" as const,
@@ -51,7 +54,8 @@ const SLIDERS = [
     icon: Heart,
     description: "How supported and connected do you feel by the people around you?",
     color: "text-rose-600",
-    track: "bg-rose-500",
+    fill: "#F43F5E",
+    track: "bg-rose-100",
   },
   {
     key: "decisionMood" as const,
@@ -59,7 +63,8 @@ const SLIDERS = [
     icon: Lightbulb,
     description: "How clear-headed and decisive have you felt this week?",
     color: "text-amber-600",
-    track: "bg-amber-500",
+    fill: "#F59E0B",
+    track: "bg-amber-100",
   },
   {
     key: "timeMood" as const,
@@ -67,9 +72,15 @@ const SLIDERS = [
     icon: Clock,
     description: "How in control of your time and schedule have you been?",
     color: "text-purple-600",
-    track: "bg-purple-500",
+    fill: "#8B5CF6",
+    track: "bg-purple-100",
   },
 ];
+
+const MOOD_EMOJI: Record<number, string> = {
+  1: "😓", 2: "😔", 3: "😕", 4: "😐", 5: "🙂",
+  6: "😊", 7: "😄", 8: "🌟", 9: "💪", 10: "🔥",
+};
 
 const STREAK_BADGES = [
   { weeks: 4, label: "4-Week Discipline", icon: "🏛️" },
@@ -163,23 +174,20 @@ export default function CheckinPage() {
     <DashboardLayout>
       <div className="max-w-2xl mx-auto py-8 px-4 space-y-6">
 
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="font-serif text-2xl font-bold text-matte-black">Weekly Check-in</h1>
-            <p className="text-slate-calm text-sm mt-1">
-              A brief honest pulse — no judgment, just clarity.
-            </p>
-          </div>
-          {/* Streak badge */}
-          <div className="flex flex-col items-center bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 min-w-[80px]">
-            <Flame className={`w-6 h-6 ${streak > 0 ? "text-orange-500" : "text-stone-300"}`} />
-            <span className="font-bold text-xl text-matte-black leading-none mt-0.5">{streak}</span>
-            <span className="text-[10px] text-stone-400 font-medium uppercase tracking-wide">
-              {streak === 1 ? "week" : "weeks"}
-            </span>
-          </div>
-        </div>
+        <PageHeader
+          title="Weekly Check-in"
+          description="A brief honest pulse — no judgment, just clarity."
+          badge={done ? { label: "This week logged", color: "green" } : undefined}
+          action={
+            <div className="flex flex-col items-center bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 min-w-[72px]">
+              <Flame className={`w-5 h-5 ${streak > 0 ? "text-orange-500" : "text-stone-300"}`} />
+              <span className="font-bold text-xl text-matte-black leading-none mt-0.5">{streak}</span>
+              <span className="text-[10px] text-stone-400 font-medium uppercase tracking-wide">
+                {streak === 1 ? "week" : "weeks"}
+              </span>
+            </div>
+          }
+        />
 
         {/* Streak progress */}
         {nextBadge && (
@@ -200,18 +208,29 @@ export default function CheckinPage() {
           </div>
         )}
 
-        {/* Success state */}
+        {/* Success summary card */}
         <AnimatePresence>
           {done && (
             <motion.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-2xl p-4"
+              className="bg-green-50 border border-green-200 rounded-2xl p-5"
             >
-              <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-semibold text-green-800">This week is logged.</p>
-                <p className="text-xs text-green-700">You can still update your scores below.</p>
+              <div className="flex items-center gap-2 mb-4">
+                <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
+                <p className="text-sm font-semibold text-green-800">This week is logged — you can still update below.</p>
+              </div>
+              <div className="grid grid-cols-5 gap-2">
+                {SLIDERS.map((s) => {
+                  const val = form[s.key];
+                  return (
+                    <div key={s.key} className="flex flex-col items-center gap-1 bg-white rounded-xl p-2 border border-green-100">
+                      <span className="text-lg">{MOOD_EMOJI[val]}</span>
+                      <span className="text-xs font-bold tabular-nums" style={{ color: s.fill }}>{val}</span>
+                      <span className="text-[9px] text-stone-400 text-center leading-tight">{s.label.split(" ")[0]}</span>
+                    </div>
+                  );
+                })}
               </div>
             </motion.div>
           )}
@@ -221,33 +240,44 @@ export default function CheckinPage() {
         {!loading && (
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="bg-white border border-stone-200 rounded-2xl shadow-premium divide-y divide-stone-50">
-              {SLIDERS.map((s, i) => {
+              {SLIDERS.map((s) => {
                 const val = form[s.key];
                 const Icon = s.icon;
+                const pct = ((val - 1) / 9) * 100;
                 return (
                   <div key={s.key} className="p-5">
-                    <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <Icon className={`w-4 h-4 ${s.color}`} />
                         <span className="text-sm font-semibold text-matte-black">{s.label}</span>
                       </div>
-                      <span className={`text-xs font-bold tabular-nums ${moodColor(val)}`}>
-                        {val}/10 · {moodLabel(val)}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{MOOD_EMOJI[val]}</span>
+                        <span className={`text-sm font-bold tabular-nums ${moodColor(val)}`}>
+                          {val}<span className="text-xs font-normal text-stone-300">/10</span>
+                        </span>
+                      </div>
                     </div>
                     <p className="text-xs text-stone-400 mb-3">{s.description}</p>
-                    <input
-                      type="range"
-                      min={1}
-                      max={10}
-                      step={1}
-                      value={val}
-                      onChange={(e) => setForm((f) => ({ ...f, [s.key]: parseInt(e.target.value) }))}
-                      className="w-full accent-soft-gold h-2 cursor-pointer"
-                    />
-                    <div className="flex justify-between text-[10px] text-stone-300 mt-1">
-                      <span>Struggling</span>
-                      <span>Excellent</span>
+                    {/* Coloured fill slider */}
+                    <div className="relative">
+                      <input
+                        type="range"
+                        min={1}
+                        max={10}
+                        step={1}
+                        value={val}
+                        onChange={(e) => setForm((f) => ({ ...f, [s.key]: parseInt(e.target.value) }))}
+                        className="w-full h-2.5 rounded-full appearance-none cursor-pointer"
+                        style={{
+                          background: `linear-gradient(to right, ${s.fill} ${pct}%, #E7E5E4 ${pct}%)`,
+                          outline: "none",
+                        }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[10px] mt-1.5">
+                      <span className="text-stone-300">😓 Struggling</span>
+                      <span className="text-stone-300">🔥 Excellent</span>
                     </div>
                   </div>
                 );
@@ -270,9 +300,8 @@ export default function CheckinPage() {
               <p className="text-right text-[10px] text-stone-300 mt-1">{form.note.length}/500</p>
             </div>
 
-            <Button type="submit" disabled={saving} className="w-full">
-              {saving ? "Saving…" : done ? "Update This Week's Check-in" : "Submit Check-in"}
-              {!saving && <ChevronRight className="w-4 h-4 ml-1" />}
+            <Button type="submit" variant="gold" disabled={saving} fullWidth loading={saving} icon={<ChevronRight className="w-4 h-4" />} iconPosition="right">
+              {done ? "Update This Week" : "Submit Check-in"}
             </Button>
           </form>
         )}

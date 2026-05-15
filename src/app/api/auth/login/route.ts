@@ -67,18 +67,17 @@ export async function POST(req: NextRequest) {
 
     const token = await createToken({
       userId: user.id,
-      email: user.email,
+      email: user.email ?? "",
       role: user.role,
     });
 
     const publicUser = {
       id: user.id,
       name: user.name,
-      email: user.email,
+      email: user.email ?? "",
       avatarUrl: user.avatarUrl,
       role: user.role,
       onboardingDone: user.onboardingDone,
-      insightCredits: user.insightCredits,
       subscription: user.subscription,
     };
 

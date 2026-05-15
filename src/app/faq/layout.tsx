@@ -6,26 +6,26 @@ const jsonLd = {
   mainEntity: [
     {
       "@type": "Question",
-      name: "What is Limitum?",
+      name: "What is Constavita?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Limitum is an AI-powered decision intelligence platform. It gives you a structured, data-driven way to measure the sustainability of your life decisions across five dimensions: financial peace, burnout risk, relationship health, decision quality, and time value. It is grounded in Stoic philosophy and behavioural science.",
+        text: "Constavita is an AI-powered decision intelligence platform. It gives you a structured, data-driven way to measure the sustainability of your life decisions across five dimensions: financial peace, burnout risk, relationship health, decision quality, and time value. It is grounded in Stoic philosophy and behavioural science.",
       },
     },
     {
       "@type": "Question",
-      name: "Is Limitum therapy or mental health support?",
+      name: "Is Constavita therapy or mental health support?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "No. Limitum is not therapy, counselling, or any form of clinical support. Our tools produce educational indices to help you reflect on your situation with greater clarity.",
+        text: "No. Constavita is not therapy, counselling, or any form of clinical support. Our tools produce educational indices to help you reflect on your situation with greater clarity.",
       },
     },
     {
       "@type": "Question",
-      name: "Is Limitum free?",
+      name: "Is Constavita free?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yes — there is a free tier with no credit card required. Free users can access all five calculators, log unlimited journal entries, use Morning Intention and Virtue Compass features, and receive 3 AI Stoic reflections per month.",
+        text: "Yes — there is a free tier with no credit card required. Free users can access all five calculators, log unlimited journal entries, and use the Morning Intention and Virtue Compass features. AI reflections (Logos) require a Premium subscription.",
       },
     },
     {
@@ -48,14 +48,14 @@ const jsonLd = {
 };
 
 export const metadata: Metadata = {
-  title: "FAQ — Limitum",
+  title: "FAQ — Constavita",
   description:
-    "Answers to common questions about Limitum — how the calculators work, AI reflections, Stoic philosophy, privacy, pricing, and account management.",
-  alternates: { canonical: "https://limitum.ai/faq" },
+    "Answers to common questions about Constavita — how the calculators work, AI reflections, Stoic philosophy, privacy, pricing, and account management.",
+  alternates: { canonical: "https://constavita.com/faq" },
   openGraph: {
-    title: "FAQ — Limitum",
-    description: "Everything you need to know about Limitum's decision intelligence tools, privacy, and pricing.",
-    url: "https://limitum.ai/faq",
+    title: "FAQ — Constavita",
+    description: "Everything you need to know about Constavita's decision intelligence tools, privacy, and pricing.",
+    url: "https://constavita.com/faq",
     type: "website",
   },
 };

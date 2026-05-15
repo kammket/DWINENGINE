@@ -74,6 +74,7 @@ export async function GET(req: NextRequest) {
   const session = await requireAuth(req);
   if (session instanceof NextResponse) return session;
 
+  try {
   const earned = await computeEarnedAchievements(session.userId);
 
   // Upsert newly earned achievements
@@ -101,4 +102,8 @@ export async function GET(req: NextRequest) {
   });
 
   return NextResponse.json({ success: true, achievements: all, newlyUnlocked: newOnes.map((e) => e.type) });
+  } catch (err) {
+    console.error("Achievements error:", err);
+    return NextResponse.json({ success: false, achievements: [], newlyUnlocked: [] }, { status: 500 });
+  }
 }

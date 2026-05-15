@@ -22,7 +22,14 @@ export default function robots(): MetadataRoute.Robots {
           "/reflections/",
         ],
       },
+      // Opt AI training crawlers out — content is proprietary
+      { userAgent: "GPTBot", disallow: "/" },
+      { userAgent: "ChatGPT-User", disallow: "/" },
+      { userAgent: "Google-Extended", disallow: "/" },
+      { userAgent: "CCBot", disallow: "/" },
+      { userAgent: "anthropic-ai", disallow: "/" },
+      { userAgent: "Claude-Web", disallow: "/" },
     ],
-    sitemap: "https://limitum.ai/sitemap.xml",
+    sitemap: "https://constavita.com/sitemap.xml",
   };
 }

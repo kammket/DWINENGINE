@@ -27,7 +27,7 @@ export async function proxy(req: NextRequest) {
 
   if (!isProtected) return NextResponse.next();
 
-  const token = req.cookies.get("limitum_session")?.value;
+  const token = req.cookies.get("constavita_session")?.value;
 
   if (!token) {
     const loginUrl = new URL("/login", req.url);
@@ -42,7 +42,7 @@ export async function proxy(req: NextRequest) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("from", pathname);
     const res = NextResponse.redirect(loginUrl);
-    res.cookies.set("limitum_session", "", { maxAge: 0, path: "/" });
+    res.cookies.set("constavita_session", "", { maxAge: 0, path: "/" });
     return res;
   }
 }

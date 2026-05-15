@@ -3,27 +3,27 @@ import type { Metadata } from "next";
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "AboutPage",
-  name: "About Limitum",
-  url: "https://limitum.ai/about",
+  name: "About Constavita",
+  url: "https://constavita.com/about",
   description:
-    "Limitum is an AI-powered decision intelligence platform grounded in Stoic philosophy and behavioural science. We help you measure the sustainability of life decisions across five dimensions.",
+    "Constavita is an AI-powered decision intelligence platform grounded in Stoic philosophy and behavioural science. We help you measure the sustainability of life decisions across five dimensions.",
   publisher: {
     "@type": "Organization",
-    name: "Limitum",
-    url: "https://limitum.ai",
+    name: "Constavita",
+    url: "https://constavita.com",
   },
 };
 
 export const metadata: Metadata = {
-  title: "About Limitum — AI Decision Intelligence Built on Stoic Philosophy",
+  title: "About Constavita — AI Decision Intelligence Built on Stoic Philosophy",
   description:
-    "Limitum helps you measure the sustainability of your life decisions using AI-powered calculators grounded in Stoic philosophy and behavioural science. Not therapy. Not prediction. Clarity.",
-  alternates: { canonical: "https://limitum.ai/about" },
+    "Constavita helps you measure the sustainability of your life decisions using AI-powered calculators grounded in Stoic philosophy and behavioural science. Not therapy. Not prediction. Clarity.",
+  alternates: { canonical: "https://constavita.com/about" },
   openGraph: {
-    title: "About Limitum — AI Decision Intelligence Built on Stoic Philosophy",
+    title: "About Constavita — AI Decision Intelligence Built on Stoic Philosophy",
     description:
       "We help you measure the sustainability of your life decisions. Not therapy. Not prediction. A rational mirror.",
-    url: "https://limitum.ai/about",
+    url: "https://constavita.com/about",
     type: "website",
   },
 };

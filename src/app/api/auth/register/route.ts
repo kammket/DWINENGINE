@@ -58,7 +58,6 @@ export async function POST(req: NextRequest) {
         name,
         email,
         passwordHash,
-        insightCredits: 10,
         subscription: {
           create: {
             tier: "FREE",
@@ -72,13 +71,12 @@ export async function POST(req: NextRequest) {
         email: true,
         role: true,
         onboardingDone: true,
-        insightCredits: true,
       },
     });
 
     const token = await createToken({
       userId: user.id,
-      email: user.email,
+      email: user.email ?? "",
       role: user.role,
     });
 

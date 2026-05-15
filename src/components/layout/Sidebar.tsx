@@ -120,7 +120,7 @@ function NavContent({
           <span className="text-white font-bold text-sm">L</span>
         </div>
         {!collapsed && (
-          <span className="font-serif font-semibold text-lg text-matte-black">Limitum</span>
+          <span className="font-serif font-semibold text-lg text-matte-black">Constavita</span>
         )}
         {onClose && (
           <button
@@ -208,19 +208,16 @@ function NavContent({
         )}
       </nav>
 
-      {/* Credits badge */}
+      {/* Upgrade CTA */}
       {!collapsed && !isPremium && (
         <div className="mx-3 mb-3">
           <Link href="/pricing">
             <div className="bg-gradient-to-r from-brand-50 to-amber-50 border border-brand-200 rounded-2xl p-3 cursor-pointer hover:border-soft-gold transition-colors">
               <div className="flex items-center gap-2 mb-1">
                 <Sparkles className="w-3.5 h-3.5 text-soft-gold" />
-                <span className="text-xs font-semibold text-soft-gold">Insight Credits</span>
+                <span className="text-xs font-semibold text-soft-gold">Upgrade to Premium</span>
               </div>
-              <div className="text-2xl font-bold text-matte-black">
-                {user?.insightCredits || 0}
-              </div>
-              <p className="text-xs text-slate-calm mt-0.5">Upgrade for unlimited</p>
+              <p className="text-xs text-slate-calm">Unlock AI reflections, simulator &amp; analytics</p>
             </div>
           </Link>
         </div>

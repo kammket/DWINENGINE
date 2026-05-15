@@ -7,7 +7,7 @@ const nextConfig = {
       { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
     ],
   },
-  serverExternalPackages: ['@prisma/client', 'bcryptjs'],
+  serverExternalPackages: ['@prisma/client', 'bcryptjs', 'ethers'],
   async headers() {
     const isDev = process.env.NODE_ENV === 'development';
     return [

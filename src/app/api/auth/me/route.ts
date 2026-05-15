@@ -19,7 +19,6 @@ export async function GET(req: NextRequest) {
         avatarUrl: true,
         role: true,
         onboardingDone: true,
-        insightCredits: true,
         subscription: {
           select: { tier: true, status: true, currentPeriodEnd: true },
         },

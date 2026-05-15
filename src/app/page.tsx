@@ -3,7 +3,7 @@ import { getDailyReflection } from "@/lib/stoic";
 import HomeClient from "./HomeClient";
 
 export const metadata: Metadata = {
-  title: "Limitum — AI-Powered Decision Intelligence & Stoic Life Calculator",
+  title: "Constavita — AI-Powered Decision Intelligence & Stoic Life Calculator",
   description:
     "Measure the sustainability of your life decisions with AI-powered calculators. Assess financial peace, burnout risk, relationship health, and time value — grounded in Stoic philosophy and behavioural science.",
   keywords: [
@@ -18,20 +18,20 @@ export const metadata: Metadata = {
     "decision quality score",
   ],
   alternates: {
-    canonical: "https://limitum.ai",
+    canonical: "https://constavita.com",
   },
   openGraph: {
-    title: "Limitum — Measure the Sustainability of Your Life Decisions",
+    title: "Constavita — Measure the Sustainability of Your Life Decisions",
     description:
       "AI-powered calculators for financial peace, burnout, relationships, and time value. Backed by Stoic philosophy and behavioural science.",
-    url: "https://limitum.ai",
-    siteName: "Limitum",
+    url: "https://constavita.com",
+    siteName: "Constavita",
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Limitum — AI Decision Intelligence",
+    title: "Constavita — AI Decision Intelligence",
     description:
       "Measure life sustainability across 5 dimensions. Free AI-powered assessment grounded in Stoic philosophy.",
   },
@@ -42,23 +42,23 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "WebSite",
-      "@id": "https://limitum.ai/#website",
-      url: "https://limitum.ai",
-      name: "Limitum",
+      "@id": "https://constavita.com/#website",
+      url: "https://constavita.com",
+      name: "Constavita",
       description: "AI-Powered Decision Intelligence Platform",
       potentialAction: {
         "@type": "SearchAction",
-        target: "https://limitum.ai/blog?q={search_term_string}",
+        target: "https://constavita.com/blog?q={search_term_string}",
         "query-input": "required name=search_term_string",
       },
     },
     {
       "@type": "SoftwareApplication",
-      "@id": "https://limitum.ai/#app",
-      name: "Limitum",
+      "@id": "https://constavita.com/#app",
+      name: "Constavita",
       applicationCategory: "HealthApplication",
       operatingSystem: "Web",
-      url: "https://limitum.ai",
+      url: "https://constavita.com",
       description:
         "AI-powered life decision calculators grounded in Stoic philosophy and behavioural science. Assess financial peace, burnout risk, relationship sustainability, decision quality, and time value.",
       offers: {
@@ -80,10 +80,23 @@ const jsonLd = {
     },
     {
       "@type": "Organization",
-      "@id": "https://limitum.ai/#org",
-      name: "Limitum",
-      url: "https://limitum.ai",
-      sameAs: [],
+      "@id": "https://constavita.com/#org",
+      name: "Constavita",
+      url: "https://constavita.com",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://constavita.com/logo.png",
+        width: 512,
+        height: 512,
+      },
+      contactPoint: {
+        "@type": "ContactPoint",
+        email: "hello@constavita.com",
+        contactType: "customer support",
+      },
+      sameAs: [
+        "https://twitter.com/constavita_ai",
+      ],
     },
   ],
 };

@@ -24,27 +24,21 @@ export async function POST(req: NextRequest) {
   if (session instanceof NextResponse) return session;
 
   try {
-    // Check subscription for simulations
     const user = await prisma.user.findUnique({
       where: { id: session.userId },
-      select: {
-        insightCredits: true,
-        subscription: { select: { tier: true } },
-      },
+      select: { subscription: { select: { tier: true } } },
     });
 
     if (!user || !user.subscription) {
       return NextResponse.json({ success: false, error: "User not found." }, { status: 404 });
     }
 
-    const isFree = user.subscription.tier === "FREE";
-    const creditsNeeded = 2;
-
-    if (isFree && user.insightCredits < creditsNeeded) {
+    const tier = user.subscription.tier;
+    if (tier === "FREE") {
       return NextResponse.json(
         {
           success: false,
-          error: "Simulations require 2 Insight Credits. Upgrade to Premium for unlimited simulations.",
+          error: "The Scenario Simulator requires a Premium subscription.",
           upgradeRequired: true,
         },
         { status: 402 }
@@ -53,24 +47,16 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const parsed = simulateSchema.safeParse(body);
-
     if (!parsed.success) {
-      return NextResponse.json(
-        { success: false, error: "Invalid simulation parameters." },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: "Invalid simulation parameters." }, { status: 400 });
     }
 
     const { scenarioType, title, parameters, baselineScore, includeAiAnalysis } = parsed.data;
 
-    const { results, projections } = runScenarioSimulation(
-      baselineScore,
-      scenarioType,
-      parameters
-    );
+    const { results, projections } = runScenarioSimulation(baselineScore, scenarioType, parameters);
 
     let aiAnalysis: string | null = null;
-    if (includeAiAnalysis && !isFree) {
+    if (includeAiAnalysis) {
       aiAnalysis = await generateScenarioAnalysis({
         type: scenarioType,
         title,
@@ -81,43 +67,21 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Save simulation and deduct credits
-    const saved = await prisma.$transaction(async (tx) => {
-      const sim = await tx.scenarioSimulation.create({
-        data: {
-          userId: session.userId,
-          scenarioType,
-          title,
-          parameters: parameters as object,
-          results: results as object,
-          projections: projections as unknown as object,
-          creditsUsed: isFree ? creditsNeeded : 0,
-        },
-      });
-
-      if (isFree) {
-        await tx.user.update({
-          where: { id: session.userId },
-          data: { insightCredits: { decrement: creditsNeeded } },
-        });
-      }
-
-      return sim;
+    const saved = await prisma.scenarioSimulation.create({
+      data: {
+        userId: session.userId,
+        scenarioType,
+        title,
+        parameters: parameters as object,
+        results: results as object,
+        projections: projections as unknown as object,
+      },
     });
 
-    return NextResponse.json({
-      success: true,
-      simulation: saved,
-      results,
-      projections,
-      aiAnalysis,
-    });
+    return NextResponse.json({ success: true, simulation: saved, results, projections, aiAnalysis });
   } catch (err) {
     console.error("Simulation error:", err);
-    return NextResponse.json(
-      { success: false, error: "Simulation failed. Please try again." },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: "Simulation failed. Please try again." }, { status: 500 });
   }
 }
 

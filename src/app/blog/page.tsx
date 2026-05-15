@@ -4,6 +4,31 @@ import { BLOG_POSTS } from "@/lib/blog";
 import { PublicHeader, Footer } from "@/components/layout/PublicLayout";
 import { ArrowRight, Clock, Tag } from "lucide-react";
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "@id": "https://constavita.com/blog",
+  name: "Constavita Journal",
+  description: "Evidence-based articles on burnout prevention, Stoic decision making, financial peace, and sustainable work-life balance.",
+  url: "https://constavita.com/blog",
+  publisher: {
+    "@type": "Organization",
+    name: "Constavita",
+    url: "https://constavita.com",
+    logo: { "@type": "ImageObject", url: "https://constavita.com/logo.png" },
+  },
+  blogPost: BLOG_POSTS.map((post) => ({
+    "@type": "BlogPosting",
+    headline: post.metaTitle,
+    url: `https://constavita.com/blog/${post.slug}`,
+    datePublished: post.publishedAt,
+    dateModified: post.updatedAt ?? post.publishedAt,
+    description: post.metaDescription,
+    author: { "@type": "Organization", name: post.author },
+    keywords: post.keywords.join(", "),
+  })),
+};
+
 export const metadata: Metadata = {
   title: "Blog — Decision Intelligence & Stoic Wellbeing",
   description:
@@ -17,14 +42,14 @@ export const metadata: Metadata = {
     "wellbeing articles",
   ],
   openGraph: {
-    title: "Limitum Blog — Decision Intelligence & Stoic Wellbeing",
+    title: "Constavita Blog — Decision Intelligence & Stoic Wellbeing",
     description:
       "Evidence-based articles on burnout prevention, Stoic decision making, financial peace, and sustainable work-life balance.",
     type: "website",
-    url: "https://limitum.ai/blog",
+    url: "https://constavita.com/blog",
   },
   alternates: {
-    canonical: "https://limitum.ai/blog",
+    canonical: "https://constavita.com/blog",
   },
 };
 
@@ -43,6 +68,8 @@ export default function BlogIndexPage() {
   const [featured, ...rest] = sortedPosts;
 
   return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     <div className="min-h-screen bg-ivory">
       <PublicHeader />
 
@@ -51,7 +78,7 @@ export default function BlogIndexPage() {
         <section className="max-w-5xl mx-auto px-6 mb-14">
           <div className="text-center">
             <span className="inline-block text-xs font-semibold uppercase tracking-widest text-soft-gold bg-amber-50 px-4 py-1.5 rounded-full mb-4">
-              Limitum Journal
+              Constavita Journal
             </span>
             <h1 className="font-serif text-4xl md:text-5xl font-bold text-matte-black mb-4">
               Decision Intelligence &amp; Stoic Wellbeing
@@ -171,7 +198,7 @@ export default function BlogIndexPage() {
               Put the ideas into practice
             </h2>
             <p className="text-slate-calm mb-6 max-w-md mx-auto">
-              Limitum&apos;s calculators turn these concepts into measurable scores for your own life — burnout risk, financial peace, decision quality, and more.
+              Constavita&apos;s calculators turn these concepts into measurable scores for your own life — burnout risk, financial peace, decision quality, and more.
             </p>
             <Link
               href="/register"
@@ -186,5 +213,6 @@ export default function BlogIndexPage() {
 
       <Footer />
     </div>
+    </>
   );
 }

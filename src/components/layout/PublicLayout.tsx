@@ -27,7 +27,7 @@ export function PublicHeader() {
           <div className="w-8 h-8 bg-gradient-to-br from-soft-gold to-brand-600 rounded-xl flex items-center justify-center">
             <span className="text-white font-bold text-sm">L</span>
           </div>
-          <span className="font-serif font-semibold text-xl text-matte-black">Limitum</span>
+          <span className="font-serif font-semibold text-xl text-matte-black">Constavita</span>
         </Link>
 
         {/* Desktop nav */}
@@ -118,7 +118,7 @@ export function Footer() {
               <div className="w-8 h-8 bg-gradient-to-br from-soft-gold to-brand-600 rounded-xl flex items-center justify-center">
                 <span className="text-white font-bold text-sm">L</span>
               </div>
-              <span className="font-serif font-semibold text-xl">Limitum</span>
+              <span className="font-serif font-semibold text-xl">Constavita</span>
             </div>
             <p className="text-sm text-stone-400 leading-relaxed">
               AI-powered decision intelligence for a calmer, clearer life.
@@ -187,7 +187,7 @@ export function Footer() {
             <strong className="text-stone-400">Important Notice:</strong> This platform provides educational and reflective analytical tools designed to support self-awareness and decision-making. It does not provide medical, psychological, legal, or financial advice. All scores and projections are educational indices, not diagnoses or predictions. Always consult qualified professionals for decisions that affect your health, finances, or legal situation.
           </p>
           <p className="text-xs text-stone-600">
-            © {new Date().getFullYear()} Limitum. All rights reserved.
+            © {new Date().getFullYear()} Constavita. All rights reserved.
           </p>
         </div>
       </div>

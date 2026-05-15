@@ -24,11 +24,11 @@ const PLANS = [
     features: [
       "All 5 calculators (unlimited)",
       "Basic assessment dashboard",
-      "3 AI reflections per month",
+      "Decision Journal & Morning Intention",
       "30-day score history",
       "Email support",
     ],
-    missing: ["Scenario Simulator", "Advanced analytics", "Unlimited AI reflections", "Priority support", "API access"],
+    missing: ["AI reflections (Logos)", "Scenario Simulator", "Advanced analytics", "Priority support", "API access"],
   },
   {
     id: "premium",
@@ -372,7 +372,7 @@ export default function PricingPage() {
               },
               {
                 q: "Is this AI-generated advice?",
-                a: "No. Limitum provides educational indices for self-reflection, not medical, financial, legal, or psychological advice. Logos (our AI) reflects Stoic philosophy, but always consult qualified professionals for major life decisions.",
+                a: "No. Constavita provides educational indices for self-reflection, not medical, financial, legal, or psychological advice. Logos (our AI) reflects Stoic philosophy, but always consult qualified professionals for major life decisions.",
               },
               {
                 q: "What payment methods do you accept?",

@@ -1,5 +1,5 @@
 /**
- * Core calculation engines for Limitum platform.
+ * Core calculation engines for Constavita platform.
  * All calculations are transparent, explainable, and non-deterministic.
  * They produce educational indices — not diagnoses or predictions.
  */

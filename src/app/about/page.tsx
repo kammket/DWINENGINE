@@ -4,15 +4,15 @@ import { PublicHeader, Footer } from "@/components/layout/PublicLayout";
 import { ArrowRight, Brain, Shield, BarChart3, Heart, Zap, BookOpen } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "About Limitum — AI Decision Intelligence Built on Stoic Philosophy",
+  title: "About Constavita — AI Decision Intelligence Built on Stoic Philosophy",
   description:
-    "Limitum is an AI-powered decision intelligence platform that helps you measure the sustainability of your life decisions using behavioural science and Stoic philosophy. Not therapy. Not prediction. Clarity.",
-  alternates: { canonical: "https://limitum.ai/about" },
+    "Constavita is an AI-powered decision intelligence platform that helps you measure the sustainability of your life decisions using behavioural science and Stoic philosophy. Not therapy. Not prediction. Clarity.",
+  alternates: { canonical: "https://constavita.com/about" },
   openGraph: {
-    title: "About Limitum — AI Decision Intelligence Built on Stoic Philosophy",
+    title: "About Constavita — AI Decision Intelligence Built on Stoic Philosophy",
     description:
       "We help you measure the sustainability of your life decisions. Not therapy. Not prediction. A rational mirror.",
-    url: "https://limitum.ai/about",
+    url: "https://constavita.com/about",
     type: "website",
   },
 };
@@ -110,7 +110,7 @@ export default function AboutPage() {
             <span className="text-soft-gold">for life decisions.</span>
           </h1>
           <p className="text-xl text-slate-calm max-w-2xl mx-auto leading-relaxed font-light">
-            Limitum exists to help you see your situation more clearly — not to evaluate you, diagnose you, or tell you what to do.
+            Constavita exists to help you see your situation more clearly — not to evaluate you, diagnose you, or tell you what to do.
             When you leave, you should feel lighter.
           </p>
         </div>
@@ -121,7 +121,7 @@ export default function AboutPage() {
         <div className="max-w-5xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12">
             <div>
-              <p className="text-xs font-semibold text-soft-gold uppercase tracking-[0.2em] mb-4">What Limitum is</p>
+              <p className="text-xs font-semibold text-soft-gold uppercase tracking-[0.2em] mb-4">What Constavita is</p>
               <h2 className="font-serif text-3xl font-bold text-matte-black mb-6">Clarity through measurement</h2>
               <ul className="space-y-4">
                 {[

@@ -1,12 +1,13 @@
-// Prisma schema — Limitum: Stoic Decision Intelligence Platform
+// Prisma schema — Constavita: Stoic Decision Intelligence Platform
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ─────────────────────────────────────────────────────
@@ -76,14 +77,14 @@ enum AchievementType {
 
 model User {
   id                String   @id @default(cuid())
-  email             String   @unique
+  email             String?  @unique
   emailVerified     DateTime?
   passwordHash      String?
+  walletAddress     String?  @unique
   name              String?
   avatarUrl         String?
   role              Role     @default(USER)
   onboardingDone    Boolean  @default(false)
-  insightCredits    Int      @default(10)
   twoFactorEnabled  Boolean  @default(false)
   twoFactorSecret   String?
   createdAt         DateTime @default(now())
@@ -109,6 +110,7 @@ model User {
   decisionJournals   DecisionJournal[]
   morningIntentions  MorningIntention[]
   virtueRatings      VirtueRating[]
+  apiKeys            ApiKey[]
 
   @@index([email])
 }
@@ -235,7 +237,6 @@ model AiReflection {
   prompt      String
   reflection  String   @db.Text
   modelUsed   String   @default("gpt-4o")
-  creditsUsed Int      @default(1)
   context     Json?
   createdAt   DateTime @default(now())
 
@@ -256,7 +257,6 @@ model ScenarioSimulation {
   parameters   Json
   results      Json
   projections  Json
-  creditsUsed  Int      @default(2)
   createdAt    DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -486,4 +486,24 @@ model VirtueRating {
   @@unique([userId, weekKey])
   @@index([userId])
   @@map("virtue_ratings")
+}
+
+// ─────────────────────────────────────────────────────
+// API KEYS (Enterprise)
+// ─────────────────────────────────────────────────────
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  userId     String
+  name       String    // human label e.g. "Production Integration"
+  keyHash    String    @unique // SHA-256 hex of the raw key
+  prefix     String    // first 8 chars shown in UI e.g. "csv_a1b2"
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("api_keys")
 }

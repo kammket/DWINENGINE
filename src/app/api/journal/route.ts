@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
+import { historyDateCutoff } from "@/lib/tier";
 
 const createSchema = z.object({
   title: z.string().min(1).max(200),
@@ -20,14 +21,21 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
   const offset = parseInt(searchParams.get("offset") || "0");
 
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { subscription: { select: { tier: true } } },
+  });
+  const cutoff = historyDateCutoff(user?.subscription?.tier);
+  const dateFilter = cutoff ? { createdAt: { gte: cutoff } } : {};
+
   const [entries, total] = await Promise.all([
     prisma.decisionJournal.findMany({
-      where: { userId: session.userId },
+      where: { userId: session.userId, ...dateFilter },
       orderBy: { createdAt: "desc" },
       take: limit,
       skip: offset,
     }),
-    prisma.decisionJournal.count({ where: { userId: session.userId } }),
+    prisma.decisionJournal.count({ where: { userId: session.userId, ...dateFilter } }),
   ]);
 
   return NextResponse.json({ success: true, entries, total });

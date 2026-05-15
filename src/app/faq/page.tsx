@@ -8,23 +8,23 @@ import { ChevronDown, ArrowRight } from "lucide-react";
 
 const FAQS: { category: string; items: { q: string; a: string }[] }[] = [
   {
-    category: "About Limitum",
+    category: "About Constavita",
     items: [
       {
-        q: "What is Limitum?",
-        a: "Limitum is an AI-powered decision intelligence platform. It gives you a structured, data-driven way to measure the sustainability of your life decisions across five dimensions: financial peace, burnout risk, relationship health, decision quality, and time value. It is grounded in Stoic philosophy and behavioural science.",
+        q: "What is Constavita?",
+        a: "Constavita is an AI-powered decision intelligence platform. It gives you a structured, data-driven way to measure the sustainability of your life decisions across five dimensions: financial peace, burnout risk, relationship health, decision quality, and time value. It is grounded in Stoic philosophy and behavioural science.",
       },
       {
-        q: "Is Limitum therapy or mental health support?",
-        a: "No. Limitum is not therapy, counselling, or any form of clinical support. Our tools produce educational indices to help you reflect on your situation with greater clarity. If you are experiencing a mental health crisis, please contact a qualified mental health professional or your country's emergency services.",
+        q: "Is Constavita therapy or mental health support?",
+        a: "No. Constavita is not therapy, counselling, or any form of clinical support. Our tools produce educational indices to help you reflect on your situation with greater clarity. If you are experiencing a mental health crisis, please contact a qualified mental health professional or your country's emergency services.",
       },
       {
-        q: "Is Limitum financial or legal advice?",
-        a: "No. Nothing on Limitum constitutes financial, investment, legal, or tax advice. The Financial Peace Calculator and other tools produce educational scores only. For financial decisions, please consult a qualified financial adviser.",
+        q: "Is Constavita financial or legal advice?",
+        a: "No. Nothing on Constavita constitutes financial, investment, legal, or tax advice. The Financial Peace Calculator and other tools produce educational scores only. For financial decisions, please consult a qualified financial adviser.",
       },
       {
-        q: "Who built Limitum and why?",
-        a: "Limitum was built on the conviction that most people make major life decisions — career changes, financial commitments, relationship choices — with very little structured data about their own patterns. We combined Stoic philosophy (which has 2,000 years of evidence as a framework for navigating uncertainty) with modern behavioural science to create a practical, psychologically safe tool for everyday decision-making.",
+        q: "Who built Constavita and why?",
+        a: "Constavita was built on the conviction that most people make major life decisions — career changes, financial commitments, relationship choices — with very little structured data about their own patterns. We combined Stoic philosophy (which has 2,000 years of evidence as a framework for navigating uncertainty) with modern behavioural science to create a practical, psychologically safe tool for everyday decision-making.",
       },
     ],
   },
@@ -70,7 +70,7 @@ const FAQS: { category: string; items: { q: string; a: string }[] }[] = [
       },
       {
         q: "How many AI reflections can I get?",
-        a: "Free accounts receive 3 AI reflections per month. Premium accounts have unlimited reflections. You can also earn bonus credits through referrals and usage milestones.",
+        a: "AI reflections (Logos) are a Premium feature. Upgrade to Premium for unlimited Stoic AI insights on your calculator results. Free accounts have full access to all 5 calculators, the Decision Journal, and Morning Intention.",
       },
     ],
   },
@@ -99,7 +99,7 @@ const FAQS: { category: string; items: { q: string; a: string }[] }[] = [
     category: "Pricing & Account",
     items: [
       {
-        q: "Is Limitum free?",
+        q: "Is Constavita free?",
         a: "Yes — there is a free tier with no credit card required. Free users can access all five calculators, log unlimited journal entries, use the Morning Intention and Virtue Compass features, and receive 3 AI Stoic reflections per month.",
       },
       {
@@ -156,8 +156,8 @@ export default function FAQPage() {
           </h1>
           <p className="text-slate-calm font-light leading-relaxed">
             Can&apos;t find your answer? Reach us at{" "}
-            <a href="mailto:hello@limitum.ai" className="text-soft-gold hover:underline">
-              hello@limitum.ai
+            <a href="mailto:hello@constavita.com" className="text-soft-gold hover:underline">
+              hello@constavita.com
             </a>
           </p>
         </div>

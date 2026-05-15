@@ -2,45 +2,55 @@ import type { Metadata } from "next";
 
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "PriceSpecification",
-  name: "Limitum Pricing",
-  url: "https://limitum.ai/pricing",
-  description: "Free and premium plans for AI-powered life decision intelligence.",
+  "@type": "Product",
+  name: "Constavita",
+  url: "https://constavita.com",
+  description: "AI-powered decision intelligence platform grounded in Stoic philosophy and behavioural science.",
+  brand: { "@type": "Brand", name: "Constavita" },
   offers: [
     {
       "@type": "Offer",
       name: "Free Plan",
       price: "0",
       priceCurrency: "USD",
-      description: "3 AI reflections per month, access to all 5 calculators",
+      availability: "https://schema.org/InStock",
+      url: "https://constavita.com/register",
+      description: "Access all 5 calculators, journal, Morning Intention, and 10 AI Stoic reflections.",
     },
     {
       "@type": "Offer",
       name: "Premium Plan",
       price: "19",
       priceCurrency: "USD",
-      billingIncrement: "month",
-      description: "Unlimited AI reflections, scenario simulator, analytics, and Virtue Compass",
+      availability: "https://schema.org/InStock",
+      url: "https://constavita.com/pricing",
+      priceSpecification: {
+        "@type": "UnitPriceSpecification",
+        price: "19",
+        priceCurrency: "USD",
+        unitCode: "MON",
+      },
+      description: "Unlimited AI reflections, scenario simulator, longitudinal analytics, and Virtue Compass.",
     },
   ],
 };
 
 export const metadata: Metadata = {
-  title: "Pricing — Free & Premium Plans | Limitum",
+  title: "Pricing — Free & Premium Plans | Constavita",
   description:
-    "Limitum is free to start. Upgrade to Premium for unlimited AI Stoic reflections, scenario simulation, longitudinal analytics, and Virtue Compass. No credit card required for the free tier.",
+    "Constavita is free to start. Upgrade to Premium for unlimited AI Stoic reflections, scenario simulation, longitudinal analytics, and Virtue Compass. No credit card required for the free tier.",
   keywords: [
-    "limitum pricing",
+    "constavita pricing",
     "decision intelligence app pricing",
     "stoic app free",
     "life calculator premium",
     "AI reflection tool cost",
   ],
-  alternates: { canonical: "https://limitum.ai/pricing" },
+  alternates: { canonical: "https://constavita.com/pricing" },
   openGraph: {
-    title: "Pricing — Limitum",
+    title: "Pricing — Constavita",
     description: "Start free. Upgrade for unlimited AI reflections, the scenario simulator, and longitudinal analytics.",
-    url: "https://limitum.ai/pricing",
+    url: "https://constavita.com/pricing",
     type: "website",
   },
 };

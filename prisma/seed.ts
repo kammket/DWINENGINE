@@ -1,5 +1,5 @@
 /**
- * Limitum — Demo Seed Script
+ * Constavita — Demo Seed Script
  *
  * Creates four demo accounts covering every subscription tier plus admin.
  * Each paid account gets a completed onboarding profile and a baseline assessment
@@ -8,10 +8,10 @@
  * Run:  npm run db:seed
  *
  * Credentials (all share password pattern):
- *   demo@limitum.ai          Demo1234!   FREE
- *   premium@limitum.ai       Demo1234!   PREMIUM
- *   enterprise@limitum.ai    Demo1234!   ENTERPRISE
- *   admin@limitum.ai         Admin1234!  ADMIN (FREE tier)
+ *   demo@constavita.com          Demo1234!   FREE
+ *   premium@constavita.com       Demo1234!   PREMIUM
+ *   enterprise@constavita.com    Demo1234!   ENTERPRISE
+ *   admin@constavita.com         Admin1234!  ADMIN (FREE tier)
  */
 
 import { PrismaClient, SubscriptionTier, CalculatorType } from "@prisma/client";
@@ -39,43 +39,38 @@ const ACCOUNTS: Array<{
   password: string;
   role: "USER" | "ADMIN";
   tier: SubscriptionTier;
-  insightCredits: number;
   withAssessment: boolean;
 }> = [
   {
     name: "Demo Free",
-    email: "demo@limitum.ai",
+    email: "demo@constavita.com",
     password: "Demo1234!",
     role: "USER",
     tier: "FREE",
-    insightCredits: 10,
     withAssessment: false,
   },
   {
     name: "Demo Premium",
-    email: "premium@limitum.ai",
+    email: "premium@constavita.com",
     password: "Demo1234!",
     role: "USER",
     tier: "PREMIUM",
-    insightCredits: 50,
     withAssessment: true,
   },
   {
     name: "Demo Enterprise",
-    email: "enterprise@limitum.ai",
+    email: "enterprise@constavita.com",
     password: "Demo1234!",
     role: "USER",
     tier: "ENTERPRISE",
-    insightCredits: 999,
     withAssessment: true,
   },
   {
     name: "Admin",
-    email: "admin@limitum.ai",
+    email: "admin@constavita.com",
     password: "Admin1234!",
     role: "ADMIN",
     tier: "FREE",
-    insightCredits: 99,
     withAssessment: false,
   },
 ];
@@ -87,7 +82,6 @@ async function seedAccount(account: (typeof ACCOUNTS)[number]) {
     password,
     role,
     tier,
-    insightCredits,
     withAssessment,
   } = account;
 
@@ -109,7 +103,6 @@ async function seedAccount(account: (typeof ACCOUNTS)[number]) {
       email,
       passwordHash,
       role,
-      insightCredits,
       onboardingDone: withAssessment,
       subscription: {
         create: {
@@ -242,16 +235,16 @@ async function seedAccount(account: (typeof ACCOUNTS)[number]) {
 // ── main ───────────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log("🌱 Seeding Limitum demo accounts…\n");
+  console.log("🌱 Seeding Constavita demo accounts…\n");
   for (const account of ACCOUNTS) {
     await seedAccount(account);
   }
   console.log("\n✅ Seed complete.\n");
   console.log("Demo credentials:");
-  console.log("  demo@limitum.ai          Demo1234!   FREE");
-  console.log("  premium@limitum.ai       Demo1234!   PREMIUM");
-  console.log("  enterprise@limitum.ai    Demo1234!   ENTERPRISE");
-  console.log("  admin@limitum.ai         Admin1234!  ADMIN");
+  console.log("  demo@constavita.com          Demo1234!   FREE");
+  console.log("  premium@constavita.com       Demo1234!   PREMIUM");
+  console.log("  enterprise@constavita.com    Demo1234!   ENTERPRISE");
+  console.log("  admin@constavita.com         Admin1234!  ADMIN");
 }
 
 main()

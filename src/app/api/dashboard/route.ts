@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
+import { historyDateCutoff } from "@/lib/tier";
 
 export async function GET(req: NextRequest) {
   const session = await requireAuth(req);
   if (session instanceof NextResponse) return session;
 
   try {
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { subscription: { select: { tier: true } } },
+    });
+    const cutoff = historyDateCutoff(user?.subscription?.tier);
+    const dateFilter = cutoff ? { createdAt: { gte: cutoff } } : {};
+
     const [latestAssessment, recentCalculators, trendHistory, simulations, reflectionCount] =
       await Promise.all([
         prisma.assessment.findFirst({
@@ -14,18 +22,18 @@ export async function GET(req: NextRequest) {
           orderBy: { createdAt: "desc" },
         }),
         prisma.calculatorResult.findMany({
-          where: { userId: session.userId },
+          where: { userId: session.userId, ...dateFilter },
           orderBy: { createdAt: "desc" },
           take: 5,
           select: { id: true, type: true, score: true, createdAt: true },
         }),
         prisma.trendHistory.findMany({
-          where: { userId: session.userId },
+          where: { userId: session.userId, ...(cutoff ? { createdAt: { gte: cutoff } } : {}) },
           orderBy: [{ year: "asc" }, { month: "asc" }],
-          take: 12,
+          take: cutoff ? 12 : 36,
         }),
         prisma.scenarioSimulation.findMany({
-          where: { userId: session.userId },
+          where: { userId: session.userId, ...dateFilter },
           orderBy: { createdAt: "desc" },
           take: 3,
           select: { id: true, title: true, scenarioType: true, createdAt: true },

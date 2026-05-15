@@ -11,7 +11,7 @@ import { SliderField } from "@/components/ui/FormFields";
 import { getScoreLabel } from "@/types";
 import { getReflectionByCategory } from "@/lib/stoic";
 import { GoalSetter } from "@/components/ui/GoalSetter";
-import { Sparkles, ArrowRight, ChevronDown, ChevronUp, Zap } from "lucide-react";
+import { Sparkles, ArrowRight, ChevronDown, ChevronUp, Zap, BookOpen } from "lucide-react";
 import toast from "react-hot-toast";
 
 type RelationshipSustainabilityInputs = {
@@ -203,6 +203,11 @@ export default function RelationshipSustainabilityPage() {
                     <Link href="/calculators/decision-regret">
                       <div className="flex items-center gap-2 px-4 py-2 bg-stone-50 hover:bg-amber-50 border border-stone-200 hover:border-soft-gold rounded-xl transition-all text-sm font-medium text-matte-black cursor-pointer">
                         Next: Decision Quality <ArrowRight className="w-4 h-4 text-soft-gold" />
+                      </div>
+                    </Link>
+                    <Link href="/journal">
+                      <div className="flex items-center gap-2 px-4 py-2 bg-stone-50 hover:bg-amber-50 border border-stone-200 hover:border-soft-gold rounded-xl transition-all text-sm font-medium text-matte-black cursor-pointer">
+                        Log a Decision <BookOpen className="w-4 h-4 text-soft-gold" />
                       </div>
                     </Link>
                     <Link href="/simulate">

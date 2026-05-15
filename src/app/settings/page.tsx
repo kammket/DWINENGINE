@@ -5,12 +5,14 @@ import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/layout/Sidebar";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { User, Lock, CreditCard, Trash2, Eye, EyeOff, CheckCircle, ExternalLink, AlertTriangle } from "lucide-react";
+import { User, Lock, CreditCard, Trash2, Eye, EyeOff, CheckCircle, ExternalLink, AlertTriangle, Download, Key, Copy, Plus, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "@/components/providers/AuthProvider";
 import Link from "next/link";
 
-type Tab = "profile" | "security" | "subscription" | "data";
+type Tab = "profile" | "security" | "subscription" | "data" | "api";
+
+type ApiKeyRecord = { id: string; name: string; prefix: string; lastUsedAt: string | null; createdAt: string };
 
 export default function SettingsPage() {
   const { user, refreshUser, logout } = useAuth();
@@ -33,6 +35,95 @@ export default function SettingsPage() {
   // Delete
   const [confirmDelete, setConfirmDelete] = useState("");
   const [deletingAccount, setDeletingAccount] = useState(false);
+
+  // API keys (Enterprise)
+  const [apiKeys, setApiKeys] = useState<ApiKeyRecord[]>([]);
+  const [apiKeysLoaded, setApiKeysLoaded] = useState(false);
+  const [newKeyName, setNewKeyName] = useState("");
+  const [creatingKey, setCreatingKey] = useState(false);
+  const [revealedKey, setRevealedKey] = useState<string | null>(null);
+  const [exportingData, setExportingData] = useState(false);
+
+  const isPremium = user?.subscription?.tier === "PREMIUM" || user?.subscription?.tier === "ENTERPRISE";
+  const isEnterprise = user?.subscription?.tier === "ENTERPRISE";
+
+  const loadApiKeys = async () => {
+    if (apiKeysLoaded) return;
+    try {
+      const res = await fetch("/api/keys");
+      const json = await res.json();
+      if (json.success) setApiKeys(json.keys);
+    } catch { /* silent */ }
+    setApiKeysLoaded(true);
+  };
+
+  const handleCreateKey = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newKeyName.trim()) return;
+    setCreatingKey(true);
+    try {
+      const res = await fetch("/api/keys", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newKeyName.trim() }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setRevealedKey(json.rawKey);
+        setApiKeys((prev) => [json.key, ...prev]);
+        setNewKeyName("");
+        toast.success("API key created — copy it now, it won't be shown again.");
+      } else {
+        toast.error(json.error || "Failed to create key.");
+      }
+    } catch {
+      toast.error("Something went wrong.");
+    }
+    setCreatingKey(false);
+  };
+
+  const handleRevokeKey = async (id: string) => {
+    try {
+      const res = await fetch(`/api/keys?id=${id}`, { method: "DELETE" });
+      const json = await res.json();
+      if (json.success) {
+        setApiKeys((prev) => prev.filter((k) => k.id !== id));
+        toast.success("Key revoked.");
+      } else {
+        toast.error(json.error || "Failed to revoke key.");
+      }
+    } catch {
+      toast.error("Something went wrong.");
+    }
+  };
+
+  const handleExport = async (dataset: string, format: "csv" | "json") => {
+    setExportingData(true);
+    try {
+      const res = await fetch(`/api/export?dataset=${dataset}&format=${format}`);
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        if (json.upgradeRequired) {
+          toast.error("Data export requires a Premium subscription.");
+        } else {
+          toast.error("Export failed. Please try again.");
+        }
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `constavita-export.${format}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Export downloaded.");
+    } catch {
+      toast.error("Export failed.");
+    } finally {
+      setExportingData(false);
+    }
+  };
 
   const handleSaveProfile = async () => {
     if (!name.trim()) return toast.error("Name cannot be empty.");
@@ -121,6 +212,7 @@ export default function SettingsPage() {
     { id: "security", label: "Security", icon: <Lock className="w-4 h-4" /> },
     { id: "subscription", label: "Subscription", icon: <CreditCard className="w-4 h-4" /> },
     { id: "data", label: "Data & Privacy", icon: <Trash2 className="w-4 h-4" /> },
+    ...(isEnterprise ? [{ id: "api" as Tab, label: "API Keys", icon: <Key className="w-4 h-4" /> }] : []),
   ];
 
   return (
@@ -310,7 +402,7 @@ export default function SettingsPage() {
                   </p>
                   <p className="text-xs text-slate-calm mt-0.5">
                     {user?.subscription?.tier === "FREE"
-                      ? "3 AI reflections/month · No simulator"
+                      ? "Calculators & journal · Upgrade for AI"
                       : user?.subscription?.tier === "PREMIUM"
                       ? "Unlimited AI · Simulator · Analytics"
                       : "All features + dedicated support"}
@@ -366,6 +458,66 @@ export default function SettingsPage() {
               </div>
             </Card>
 
+            {/* Export Data */}
+            <Card padding="lg">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Download className="w-4 h-4 text-soft-gold" />
+                  <CardTitle>Export Your Data</CardTitle>
+                </div>
+                <CardDescription>
+                  {isPremium
+                    ? "Download your full history as CSV or JSON."
+                    : "Available on Premium and Enterprise plans."}
+                </CardDescription>
+              </CardHeader>
+              {isPremium ? (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { label: "All Data", dataset: "all" },
+                      { label: "Calculator Results", dataset: "calculators" },
+                      { label: "Decision Journal", dataset: "journal" },
+                      { label: "Weekly Check-ins", dataset: "checkins" },
+                    ].map(({ label, dataset }) => (
+                      <div key={dataset} className="flex flex-col gap-1.5 p-3 bg-stone-50 rounded-xl border border-stone-200">
+                        <span className="text-xs font-semibold text-matte-black">{label}</span>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleExport(dataset, "csv")}
+                            disabled={exportingData}
+                            className="flex-1 text-xs font-medium py-1.5 rounded-lg border border-stone-200 bg-white hover:border-soft-gold hover:text-soft-gold transition-colors disabled:opacity-50"
+                          >
+                            CSV
+                          </button>
+                          <button
+                            onClick={() => handleExport(dataset, "json")}
+                            disabled={exportingData}
+                            className="flex-1 text-xs font-medium py-1.5 rounded-lg border border-stone-200 bg-white hover:border-soft-gold hover:text-soft-gold transition-colors disabled:opacity-50"
+                          >
+                            JSON
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {exportingData && (
+                    <p className="text-xs text-slate-calm flex items-center gap-2">
+                      <span className="w-3 h-3 border border-soft-gold border-t-transparent rounded-full animate-spin inline-block" />
+                      Preparing export…
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-3 bg-amber-50 rounded-xl border border-amber-100">
+                  <p className="text-xs text-slate-calm">Upgrade to export your full history as CSV or JSON.</p>
+                  <Link href="/pricing">
+                    <Button variant="gold" size="sm">Upgrade</Button>
+                  </Link>
+                </div>
+              )}
+            </Card>
+
             <Card padding="lg" className="border-red-200">
               <CardHeader>
                 <div className="flex items-center gap-2">
@@ -400,6 +552,92 @@ export default function SettingsPage() {
                 </Button>
               </div>
             </Card>
+          </motion.div>
+        )}
+        {/* API Keys Tab — Enterprise only */}
+        {tab === "api" && isEnterprise && (() => { if (!apiKeysLoaded) loadApiKeys(); return null; })()}
+        {tab === "api" && (
+          <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
+            <Card padding="lg">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Key className="w-4 h-4 text-soft-gold" />
+                  <CardTitle>API Keys</CardTitle>
+                </div>
+                <CardDescription>
+                  Generate keys to authenticate requests to the Constavita API. Each key is shown once — store it securely.
+                </CardDescription>
+              </CardHeader>
+
+              {/* Create new key */}
+              <form onSubmit={handleCreateKey} className="flex gap-2 mb-5">
+                <input
+                  type="text"
+                  value={newKeyName}
+                  onChange={(e) => setNewKeyName(e.target.value)}
+                  placeholder="Key name e.g. Production Integration"
+                  className="input-field flex-1 text-sm"
+                  maxLength={80}
+                />
+                <Button type="submit" variant="gold" size="sm" loading={creatingKey} icon={<Plus className="w-4 h-4" />}>
+                  Create
+                </Button>
+              </form>
+
+              {/* Revealed key banner */}
+              {revealedKey && (
+                <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                  <p className="text-xs font-semibold text-amber-800 mb-1">Copy your key now — it will not be shown again.</p>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 text-xs font-mono bg-white border border-amber-200 rounded-lg px-3 py-2 text-matte-black break-all">
+                      {revealedKey}
+                    </code>
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(revealedKey); toast.success("Copied!"); }}
+                      className="p-2 rounded-lg border border-amber-200 bg-white hover:bg-amber-100 transition-colors"
+                    >
+                      <Copy className="w-4 h-4 text-amber-700" />
+                    </button>
+                    <button onClick={() => setRevealedKey(null)} className="p-2 rounded-lg border border-amber-200 bg-white hover:bg-amber-100 transition-colors">
+                      <X className="w-4 h-4 text-amber-700" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Keys list */}
+              {apiKeys.length === 0 ? (
+                <p className="text-sm text-slate-calm text-center py-6">No active keys. Create one above.</p>
+              ) : (
+                <div className="space-y-2">
+                  {apiKeys.map((key) => (
+                    <div key={key.id} className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-200">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-matte-black truncate">{key.name}</p>
+                        <p className="text-xs text-slate-calm font-mono">
+                          {key.prefix}••••••••••••••••••••
+                          {key.lastUsedAt && (
+                            <span className="ml-2 non-mono not-italic">· last used {new Date(key.lastUsedAt).toLocaleDateString()}</span>
+                          )}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleRevokeKey(key.id)}
+                        className="ml-3 flex-shrink-0 p-1.5 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                        title="Revoke key"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+
+            <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl text-xs text-slate-calm leading-relaxed">
+              Send your API key in the <code className="font-mono bg-white px-1 rounded">Authorization: Bearer &lt;key&gt;</code> header.
+              Keys inherit Enterprise-tier permissions and count against your rate limits.
+            </div>
           </motion.div>
         )}
       </div>

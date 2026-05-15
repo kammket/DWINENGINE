@@ -8,7 +8,7 @@ function getOpenAI(): OpenAI {
   return _openai;
 }
 
-const SYSTEM_PROMPT = `You are Logos — the AI reflection engine of Limitum, a Stoic decision intelligence platform.
+const SYSTEM_PROMPT = `You are Logos — the AI reflection engine of Constavita, a Stoic decision intelligence platform.
 
 Your role is to provide calm, wise, analytical reflections that help users understand their decision patterns and life sustainability metrics. You are inspired by Marcus Aurelius, Epictetus, Seneca, and the Stoic tradition, grounded in behavioral economics, cognitive psychology, decision theory, financial reasoning, and systems thinking.
 
@@ -119,7 +119,7 @@ export async function generateOnboardingInsight(profile: {
   energyLevels: number;
 }): Promise<string> {
   const prompt = `
-New user starting their Limitum journey with these initial self-assessments (1–10 scale):
+New user starting their Constavita journey with these initial self-assessments (1–10 scale):
 - Stress perception: ${profile.stressPerception}/10
 - Financial comfort: ${profile.financialComfort}/10
 - Time freedom: ${profile.timeFreedom}/10
@@ -140,6 +140,6 @@ Provide a warm, calming welcome reflection that acknowledges their current state
 
   return (
     completion.choices[0]?.message?.content ||
-    "Welcome to Limitum. Your journey toward clarity begins here."
+    "Welcome to Constavita. Your journey toward clarity begins here."
   );
 }

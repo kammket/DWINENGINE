@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
+import { historyDateCutoff } from "@/lib/tier";
 
 function getTodayKey(): string {
   const d = new Date();
@@ -50,17 +51,28 @@ export async function GET(req: NextRequest) {
   const session = await requireAuth(req);
   if (session instanceof NextResponse) return session;
 
-  const intentions = await prisma.morningIntention.findMany({
-    where: { userId: session.userId },
-    orderBy: { dateKey: "desc" },
-    take: 30,
-  });
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { subscription: { select: { tier: true } } },
+    });
+    const cutoff = historyDateCutoff(user?.subscription?.tier);
 
-  const todayKey = getTodayKey();
-  const today = intentions.find((i) => i.dateKey === todayKey) ?? null;
-  const streak = computeIntentionStreak(intentions);
+    const intentions = await prisma.morningIntention.findMany({
+      where: { userId: session.userId, ...(cutoff ? { createdAt: { gte: cutoff } } : {}) },
+      orderBy: { dateKey: "desc" },
+      take: 30,
+    });
 
-  return NextResponse.json({ success: true, today, streak, history: intentions });
+    const todayKey = getTodayKey();
+    const today = intentions.find((i) => i.dateKey === todayKey) ?? null;
+    const streak = computeIntentionStreak(intentions);
+
+    return NextResponse.json({ success: true, today, streak, history: intentions });
+  } catch (err) {
+    console.error("Intention GET error:", err);
+    return NextResponse.json({ success: false, today: null, streak: 0, history: [] }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -69,9 +81,9 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
 
-  // Check if it's a create or an update (complete evening reflection)
-  const updateParsed = updateSchema.safeParse(body);
+  // Update path — evening reflection completion
   if (body.completed !== undefined || body.completedNote !== undefined) {
+    const updateParsed = updateSchema.safeParse(body);
     if (!updateParsed.success) {
       return NextResponse.json({ success: false, error: "Invalid data." }, { status: 400 });
     }
@@ -89,6 +101,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, intention: updated });
   }
 
+  // Create path — morning intention
   const parsed = createSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ success: false, error: "Invalid data." }, { status: 400 });

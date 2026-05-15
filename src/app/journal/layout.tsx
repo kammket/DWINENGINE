@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Decision Journal — Limitum",
+  title: "Decision Journal — Constavita",
   description: "Log and reflect on your decisions. Track outcomes, apply Dichotomy of Control, and build decision clarity over time.",
   robots: { index: false, follow: false },
 };

@@ -1,4 +1,4 @@
-// Global type definitions for Limitum platform
+// Global type definitions for Constavita platform
 
 export type User = {
   id: string;
@@ -7,7 +7,6 @@ export type User = {
   avatarUrl: string | null;
   role: "USER" | "ADMIN";
   onboardingDone: boolean;
-  insightCredits: number;
   subscription?: Subscription;
 };
 

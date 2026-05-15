@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Decision Calculators — Limitum",
+  title: "Decision Calculators — Constavita",
   description:
     "Five AI-powered life calculators: financial peace, burnout risk, relationship sustainability, decision quality, and time value. Free Stoic-grounded assessments.",
   keywords: [
@@ -12,12 +12,12 @@ export const metadata: Metadata = {
     "relationship calculator",
     "stoic self-assessment",
   ],
-  alternates: { canonical: "https://limitum.ai/calculators" },
+  alternates: { canonical: "https://constavita.com/calculators" },
   openGraph: {
-    title: "Life Sustainability Calculators — Limitum",
+    title: "Life Sustainability Calculators — Constavita",
     description:
       "Assess your financial peace, burnout risk, relationship health, decision quality, and time value with AI-powered calculators.",
-    url: "https://limitum.ai/calculators",
+    url: "https://constavita.com/calculators",
     type: "website",
   },
 };

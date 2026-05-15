@@ -138,7 +138,7 @@ export default function OnboardingPage() {
           <div className="w-7 h-7 bg-gradient-to-br from-soft-gold to-brand-600 rounded-xl flex items-center justify-center">
             <span className="text-white font-bold text-xs">L</span>
           </div>
-          <span className="font-serif font-semibold text-matte-black">Limitum</span>
+          <span className="font-serif font-semibold text-matte-black">Constavita</span>
         </div>
       </div>
 

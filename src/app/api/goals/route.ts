@@ -19,6 +19,7 @@ export async function GET(req: NextRequest) {
   const session = await requireAuth(req);
   if (session instanceof NextResponse) return session;
 
+  try {
   const goals = await prisma.userGoal.findMany({
     where: { userId: session.userId },
     orderBy: { createdAt: "desc" },
@@ -37,6 +38,10 @@ export async function GET(req: NextRequest) {
   );
 
   return NextResponse.json({ success: true, goals: withProgress });
+  } catch (err) {
+    console.error("Goals GET error:", err);
+    return NextResponse.json({ success: false, goals: [] }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {

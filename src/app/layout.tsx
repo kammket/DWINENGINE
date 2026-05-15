@@ -1,16 +1,23 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-playfair",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://limitum.ai"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://constavita.com"),
   title: {
-    default: "Limitum — AI-Powered Decision Intelligence",
-    template: "%s | Limitum",
+    default: "Constavita — AI-Powered Decision Intelligence",
+    template: "%s | Constavita",
   },
   description:
     "An AI-powered decision intelligence platform that helps you evaluate the sustainability and emotional consequences of life decisions using behavioral analytics, explainable models, and Stoic-inspired reflection.",
@@ -25,16 +32,18 @@ export const metadata: Metadata = {
     "emotional analytics",
   ],
   openGraph: {
-    title: "Limitum — AI-Powered Decision Intelligence",
+    title: "Constavita — AI-Powered Decision Intelligence",
     description:
       "Evaluate life decisions with behavioral analytics, Stoic wisdom, and explainable AI models.",
-    siteName: "Limitum",
+    siteName: "Constavita",
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Limitum — AI-Powered Decision Intelligence",
+    site: "@constavita_ai",
+    creator: "@constavita_ai",
+    title: "Constavita — AI-Powered Decision Intelligence",
     description: "Evaluate life decisions with Stoic wisdom and explainable AI.",
   },
   robots: {
@@ -56,15 +65,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body className="bg-warm-white text-matte-black antialiased">
         <AuthProvider>
           {children}

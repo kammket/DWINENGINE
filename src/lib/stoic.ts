@@ -1,4 +1,4 @@
-// Stoic Reflection Engine — Limitum Platform
+// Stoic Reflection Engine — Constavita Platform
 // A curated library of philosophically grounded, emotionally restorative reflections.
 // Drawn from Stoic philosophy, modern behavioral science, and contemplative wisdom.
 // NEVER motivational hype. Always calm, wise, intellectually honest.

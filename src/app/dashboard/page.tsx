@@ -210,66 +210,74 @@ export default function DashboardPage() {
           </Link>
         </motion.div>
 
-        {/* Streak banner */}
-        {streak > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3"
-          >
-            <div className="flex items-center gap-3">
-              <Flame className="w-5 h-5 text-orange-500" />
-              <div>
-                <p className="text-sm font-semibold text-matte-black">
-                  {streak}-week check-in streak
+        {/* Today at a Glance */}
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {/* Morning Intention */}
+            <Link href="/intention">
+              <div className={`group flex flex-col gap-1.5 p-4 rounded-2xl border cursor-pointer transition-all hover:shadow-sm ${
+                intentionToday
+                  ? "bg-green-50 border-green-200"
+                  : "bg-stone-50 border-stone-200 hover:border-amber-200 hover:bg-amber-50/50"
+              }`}>
+                <span className="text-xl">{intentionToday ? "✅" : "🏛️"}</span>
+                <p className="text-xs font-semibold text-matte-black leading-tight">Morning Intention</p>
+                <p className="text-[11px] text-slate-calm">
+                  {intentionToday ? "Set for today" : "Tap to begin"}
                 </p>
-                <p className="text-xs text-stone-400">Keep it alive — check in again next week</p>
               </div>
-            </div>
-            <Link href="/checkin">
-              <Button variant="secondary" size="sm">Check in</Button>
             </Link>
-          </motion.div>
-        )}
 
-        {/* Morning intention nudge */}
-        {!intentionToday ? (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between bg-stone-50 border border-stone-200 rounded-2xl px-5 py-3"
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-lg">🏛️</span>
-              <div>
-                <p className="text-sm font-semibold text-matte-black">Set your morning intention</p>
-                <p className="text-xs text-stone-400">A Stoic ritual — two minutes, shapes the whole day</p>
-              </div>
-            </div>
+            {/* Evening Review / intention complete */}
             <Link href="/intention">
-              <Button variant="secondary" size="sm">Begin <ArrowRight className="w-3.5 h-3.5 ml-1" /></Button>
-            </Link>
-          </motion.div>
-        ) : !intentionToday.completed && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3"
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-lg">🌙</span>
-              <div>
-                <p className="text-sm font-semibold text-matte-black">
-                  Evening review awaits — virtue: <span className="capitalize text-soft-gold">{intentionToday.virtue}</span>
+              <div className={`group flex flex-col gap-1.5 p-4 rounded-2xl border cursor-pointer transition-all hover:shadow-sm ${
+                intentionToday?.completed
+                  ? "bg-green-50 border-green-200"
+                  : intentionToday
+                  ? "bg-amber-50 border-amber-200"
+                  : "bg-stone-50 border-stone-100 opacity-50 pointer-events-none"
+              }`}>
+                <span className="text-xl">{intentionToday?.completed ? "✅" : "🌙"}</span>
+                <p className="text-xs font-semibold text-matte-black leading-tight">Evening Review</p>
+                <p className="text-[11px] text-slate-calm">
+                  {intentionToday?.completed
+                    ? "Reflected"
+                    : intentionToday
+                    ? `Virtue: ${intentionToday.virtue}`
+                    : "Set intention first"}
                 </p>
-                <p className="text-xs text-stone-400">Reflect on how you lived today's intention</p>
               </div>
-            </div>
-            <Link href="/intention">
-              <Button variant="secondary" size="sm">Review <ArrowRight className="w-3.5 h-3.5 ml-1" /></Button>
             </Link>
-          </motion.div>
-        )}
+
+            {/* Weekly Check-in streak */}
+            <Link href="/checkin">
+              <div className={`group flex flex-col gap-1.5 p-4 rounded-2xl border cursor-pointer transition-all hover:shadow-sm ${
+                streak > 0
+                  ? "bg-orange-50 border-orange-200"
+                  : "bg-stone-50 border-stone-200 hover:border-orange-200 hover:bg-orange-50/50"
+              }`}>
+                <Flame className={`w-5 h-5 ${streak > 0 ? "text-orange-500" : "text-stone-300"}`} />
+                <p className="text-xs font-semibold text-matte-black leading-tight">
+                  {streak > 0 ? `${streak}-week streak` : "No streak yet"}
+                </p>
+                <p className="text-[11px] text-slate-calm">Weekly check-in</p>
+              </div>
+            </Link>
+
+            {/* Last Calculator */}
+            <Link href="/calculators">
+              <div className="group flex flex-col gap-1.5 p-4 rounded-2xl border border-stone-200 bg-stone-50 cursor-pointer hover:border-brand-200 hover:bg-brand-50/30 transition-all hover:shadow-sm">
+                <Calculator className="w-5 h-5 text-slate-calm group-hover:text-soft-gold transition-colors" />
+                <p className="text-xs font-semibold text-matte-black leading-tight">Calculators</p>
+                <p className="text-[11px] text-slate-calm">
+                  {data?.recentCalculators?.[0]
+                    ? `Last: ${formatRelativeTime(data.recentCalculators[0].createdAt)}`
+                    : "Run one today"}
+                </p>
+              </div>
+            </Link>
+          </div>
+        </motion.div>
 
         {/* Daily Reflection */}
         <DailyReflection reflection={dailyReflection} variant="card" />
@@ -289,7 +297,7 @@ export default function DashboardPage() {
                 Welcome to your clarity sanctuary.
               </h2>
               <p className="text-slate-calm text-sm mb-6 max-w-md mx-auto leading-relaxed">
-                Limitum is a rational mirror for your life — grounded in Stoic philosophy and behavioural science.
+                Constavita is a rational mirror for your life — grounded in Stoic philosophy and behavioural science.
                 Begin by completing your baseline, then explore what matters most to you right now.
               </p>
               <Link href="/onboarding">
@@ -578,7 +586,7 @@ export default function DashboardPage() {
                       Request a reflection to receive Stoic-inspired insight on your current patterns.
                     </p>
                     <p className="text-xs text-stone-400 mt-1">
-                      Uses 1 Insight Credit • {user?.insightCredits || 0} remaining
+                      Premium feature — <Link href="/pricing" className="text-soft-gold hover:underline">upgrade to unlock</Link>
                     </p>
                   </div>
                 )}

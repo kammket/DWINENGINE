@@ -6,8 +6,10 @@ import { DashboardLayout } from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/Button";
 import {
   BookOpen, Plus, Trash2, ChevronDown, ChevronUp, CheckCircle2,
-  Pencil, X, Clock, Target, Sparkles, CircleDot,
+  Pencil, X, Clock, Target, Sparkles, CircleDot, Search, Filter,
+  Lightbulb,
 } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 import toast from "react-hot-toast";
 import { formatRelativeTime } from "@/lib/utils";
 
@@ -47,6 +49,63 @@ const EMPTY_FORM: NewEntryForm = {
   decisionScore: "",
   chosenOption: "",
   controlCategory: "",
+};
+
+type ContextPrompt = {
+  label: string;
+  emoji: string;
+  moodScore: number | null;
+  calcScore: number | null;
+  prompt: string;
+  href: string;
+};
+
+const DIMENSION_PROMPTS: Record<string, { emoji: string; label: string; href: string; prompt: (mood: number | null, calc: number | null) => string }> = {
+  financialMood: {
+    emoji: "💰",
+    label: "Financial",
+    href: "/calculators/financial-peace",
+    prompt: (mood) =>
+      mood !== null && mood <= 5
+        ? `Your Financial mood was ${mood}/10 this week. Is there a money decision — spending, saving, an opportunity — that you've been putting off logging?`
+        : "Is there a financial decision you're weighing right now? Getting it out of your head and onto paper often clarifies the path forward.",
+  },
+  burnoutMood: {
+    emoji: "⚡",
+    label: "Energy",
+    href: "/calculators/burnout-risk",
+    prompt: (mood) =>
+      mood !== null && mood <= 5
+        ? `Your Energy mood was ${mood}/10 this week. What's been draining you most? Logging the decision behind it could surface options you haven't considered.`
+        : "Even when energy is good, there are often choices about how you spend it. Is there a time or work decision worth examining?",
+  },
+  relationshipMood: {
+    emoji: "🤝",
+    label: "Relationship",
+    href: "/calculators/relationship-sustainability",
+    prompt: (mood) =>
+      mood !== null && mood <= 5
+        ? `Your Relationship mood was ${mood}/10 this week. Is there a conversation or commitment decision you've been avoiding? Writing it out often reduces the weight.`
+        : "Relationships often involve unspoken decisions. Is there a boundary, commitment, or expectation worth examining?",
+  },
+  decisionMood: {
+    emoji: "🧠",
+    label: "Decision Clarity",
+    href: "/calculators/decision-regret",
+    prompt: (mood) =>
+      mood !== null && mood <= 5
+        ? `You rated your Decision Clarity ${mood}/10 this week — this is exactly the right moment to log a decision before uncertainty clouds it further.`
+        : "A week of clear thinking is a good time to log a decision you're sitting with, while your reasoning is sharp.",
+  },
+  timeMood: {
+    emoji: "⏳",
+    label: "Time Freedom",
+    href: "/calculators/time-value",
+    prompt: (mood) =>
+      mood !== null && mood <= 5
+        ? `Your Time Freedom mood was ${mood}/10 this week. Is there a commitment you said yes to that deserves a second look? Log it here.`
+        : "How you spend your time is a series of decisions. Is there one worth examining — something you said yes or no to recently?",
+  },
 };
 
 function scoreColor(s: number): string {
@@ -257,6 +316,8 @@ function EntryCard({
   );
 }
 
+type FilterChip = "all" | "in_control" | "partial" | "outside_control" | "has_outcome" | "no_outcome";
+
 export default function JournalPage() {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [total, setTotal] = useState(0);
@@ -264,14 +325,61 @@ export default function JournalPage() {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<NewEntryForm>(EMPTY_FORM);
+  const [search, setSearch] = useState("");
+  const [activeFilter, setActiveFilter] = useState<FilterChip>("all");
+  const [contextPrompt, setContextPrompt] = useState<ContextPrompt | null>(null);
+  const [promptDismissed, setPromptDismissed] = useState(false);
 
   const fetchEntries = useCallback(async () => {
-    const res = await fetch("/api/journal?limit=20");
-    const json = await res.json();
-    if (json.success) {
-      setEntries(json.entries);
-      setTotal(json.total);
+    const [journalRes, checkinRes, calcRes] = await Promise.all([
+      fetch("/api/journal?limit=20"),
+      fetch("/api/checkin"),
+      fetch("/api/calculators?limit=10"),
+    ]);
+    const [journalJson, checkinJson, calcJson] = await Promise.all([
+      journalRes.json(),
+      checkinRes.json(),
+      calcRes.json(),
+    ]);
+
+    if (journalJson.success) {
+      setEntries(journalJson.entries);
+      setTotal(journalJson.total);
     }
+
+    // Build contextual prompt from weakest mood dimension
+    const thisWeek = checkinJson.success ? checkinJson.thisWeek : null;
+    const calcResults: Array<{ type: string; score: number }> = calcJson.success ? calcJson.results || [] : [];
+    const latestByType: Record<string, number> = {};
+    calcResults.forEach((r) => { if (latestByType[r.type] === undefined) latestByType[r.type] = r.score; });
+
+    if (thisWeek) {
+      const moodKeys = ["financialMood", "burnoutMood", "relationshipMood", "decisionMood", "timeMood"] as const;
+      const MOOD_TO_CALC: Record<string, string> = {
+        financialMood: "FINANCIAL_PEACE",
+        burnoutMood: "BURNOUT_RISK",
+        relationshipMood: "RELATIONSHIP_SUSTAINABILITY",
+        decisionMood: "DECISION_REGRET",
+        timeMood: "TIME_VALUE",
+      };
+      // Pick the dimension with the lowest mood score
+      const weakest = moodKeys.reduce((a, b) =>
+        (thisWeek[a] as number) <= (thisWeek[b] as number) ? a : b
+      );
+      const moodScore = thisWeek[weakest] as number;
+      const calcType = MOOD_TO_CALC[weakest];
+      const calcScore = latestByType[calcType] ?? null;
+      const meta = DIMENSION_PROMPTS[weakest];
+      setContextPrompt({
+        label: meta.label,
+        emoji: meta.emoji,
+        moodScore,
+        calcScore,
+        prompt: meta.prompt(moodScore, calcScore),
+        href: meta.href,
+      });
+    }
+
     setLoading(false);
   }, []);
 
@@ -341,23 +449,126 @@ export default function JournalPage() {
     setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, ...data } : e)));
   }
 
+  const filteredEntries = entries.filter((e) => {
+    const q = search.trim().toLowerCase();
+    const matchesSearch = !q || e.title.toLowerCase().includes(q) || e.context.toLowerCase().includes(q);
+    const matchesFilter =
+      activeFilter === "all" ||
+      (activeFilter === "has_outcome" && !!e.outcome) ||
+      (activeFilter === "no_outcome" && !e.outcome) ||
+      e.controlCategory === activeFilter;
+    return matchesSearch && matchesFilter;
+  });
+
+  const FILTER_CHIPS: { key: FilterChip; label: string }[] = [
+    { key: "all", label: "All" },
+    { key: "in_control", label: "In control" },
+    { key: "partial", label: "Partial" },
+    { key: "outside_control", label: "Not in control" },
+    { key: "has_outcome", label: "Outcome logged" },
+    { key: "no_outcome", label: "Awaiting outcome" },
+  ];
+
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto py-8 px-4 space-y-6">
 
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="font-serif text-2xl font-bold text-matte-black">Decision Journal</h1>
-            <p className="text-slate-calm text-sm mt-1">
-              Log decisions before you make them. Return to record the outcome.
-            </p>
+        <PageHeader
+          title="Decision Journal"
+          description="Log decisions before you make them. Return to record the outcome."
+          badge={total > 0 ? { label: `${total} entries`, color: "gold" } : undefined}
+          action={
+            <Button
+              onClick={() => {
+                setShowForm((s) => !s);
+                setPromptDismissed(false);
+              }}
+              size="sm"
+              icon={showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+            >
+              {showForm ? "Cancel" : "New Entry"}
+            </Button>
+          }
+        />
+
+        {/* Search + filter bar */}
+        {entries.length > 0 && (
+          <div className="space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by title or context…"
+                className="w-full border border-stone-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-soft-gold/30 bg-white"
+              />
+              {search && (
+                <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-matte-black">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <Filter className="w-3.5 h-3.5 text-stone-400 flex-shrink-0" />
+              {FILTER_CHIPS.map((chip) => (
+                <button
+                  key={chip.key}
+                  onClick={() => setActiveFilter(chip.key)}
+                  className={`text-xs font-medium px-3 py-1 rounded-full border transition-all ${
+                    activeFilter === chip.key
+                      ? "bg-matte-black text-white border-matte-black"
+                      : "bg-white text-slate-calm border-stone-200 hover:border-stone-300"
+                  }`}
+                >
+                  {chip.label}
+                </button>
+              ))}
+              {(search || activeFilter !== "all") && (
+                <span className="text-[11px] text-stone-400 ml-1">
+                  {filteredEntries.length} of {total}
+                </span>
+              )}
+            </div>
           </div>
-          <Button onClick={() => setShowForm((s) => !s)} size="sm">
-            {showForm ? <X className="w-4 h-4 mr-1" /> : <Plus className="w-4 h-4 mr-1" />}
-            {showForm ? "Cancel" : "New Entry"}
-          </Button>
-        </div>
+        )}
+
+        {/* Contextual prompt — shown when form opens and not dismissed */}
+        <AnimatePresence>
+          {showForm && contextPrompt && !promptDismissed && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4"
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm border border-amber-100">
+                  <Lightbulb className="w-4 h-4 text-soft-gold" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-amber-800 mb-0.5">
+                    {contextPrompt.emoji} {contextPrompt.label} — suggested focus
+                  </p>
+                  <p className="text-sm text-stone-700 leading-relaxed">{contextPrompt.prompt}</p>
+                  {contextPrompt.calcScore !== null && contextPrompt.calcScore < 60 && (
+                    <p className="text-xs text-amber-700 mt-1.5 font-medium">
+                      Calculator score: {Math.round(contextPrompt.calcScore)}/100 — consider running it again after writing.
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPromptDismissed(true)}
+                  className="text-stone-400 hover:text-stone-600 flex-shrink-0"
+                  aria-label="Dismiss prompt"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* New entry form */}
         <AnimatePresence>
@@ -500,7 +711,7 @@ export default function JournalPage() {
         {/* Entries */}
         {loading ? (
           <div className="space-y-3">
-            {[1, 2].map((i) => (
+            {[1, 2, 3].map((i) => (
               <div key={i} className="h-20 bg-stone-100 rounded-2xl animate-pulse" />
             ))}
           </div>
@@ -511,14 +722,24 @@ export default function JournalPage() {
             <p className="text-sm text-slate-calm max-w-xs mx-auto mb-6">
               Logging decisions before you make them is one of the most powerful habits you can build.
             </p>
-            <Button onClick={() => setShowForm(true)} size="sm">
-              <Plus className="w-4 h-4 mr-1" />
+            <Button onClick={() => setShowForm(true)} size="sm" icon={<Plus className="w-4 h-4" />}>
               Log your first decision
             </Button>
           </div>
+        ) : filteredEntries.length === 0 ? (
+          <div className="text-center py-12">
+            <Search className="w-8 h-8 text-stone-200 mx-auto mb-3" />
+            <p className="text-sm text-slate-calm mb-2">No entries match your search.</p>
+            <button
+              onClick={() => { setSearch(""); setActiveFilter("all"); }}
+              className="text-xs text-soft-gold hover:underline font-medium"
+            >
+              Clear filters
+            </button>
+          </div>
         ) : (
           <div className="space-y-4">
-            {entries.map((entry) => (
+            {filteredEntries.map((entry) => (
               <EntryCard
                 key={entry.id}
                 entry={entry}

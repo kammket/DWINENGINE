@@ -1,7 +1,7 @@
 import { PublicHeader, Footer } from "@/components/layout/PublicLayout";
 
 export const metadata = {
-  title: "Privacy Policy — Limitum",
+  title: "Privacy Policy — Constavita",
 };
 
 export default function PrivacyPage() {
@@ -16,7 +16,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="font-serif text-xl font-bold mb-2">1. Who We Are</h2>
             <p>
-              Limitum (&ldquo;we&rdquo;, &ldquo;our&rdquo;, &ldquo;us&rdquo;) operates the Limitum platform at limitum.app. We provide
+              Constavita (&ldquo;we&rdquo;, &ldquo;our&rdquo;, &ldquo;us&rdquo;) operates the Constavita platform at constavita.app. We provide
               AI-powered self-reflection tools for educational purposes. References to &ldquo;you&rdquo; refer to
               users of our platform.
             </p>
@@ -39,7 +39,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="font-serif text-xl font-bold mb-2">3. How We Use Your Information</h2>
             <ul className="list-disc pl-5 space-y-1">
-              <li>Provide, operate, and improve the Limitum platform.</li>
+              <li>Provide, operate, and improve the Constavita platform.</li>
               <li>Generate personalized educational insights and AI reflections.</li>
               <li>Process subscription payments via Stripe.</li>
               <li>Send essential account and security notifications (no unsolicited marketing without consent).</li>
@@ -91,7 +91,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="font-serif text-xl font-bold mb-2">9. Contact</h2>
-            <p>For privacy inquiries, contact us at <a href="mailto:privacy@limitum.app" className="text-soft-gold underline">privacy@limitum.app</a>.</p>
+            <p>For privacy inquiries, contact us at <a href="mailto:privacy@constavita.app" className="text-soft-gold underline">privacy@constavita.app</a>.</p>
           </section>
         </div>
       </main>

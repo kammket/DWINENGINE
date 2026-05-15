@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Complete Payment — Limitum",
-  description: "Complete your Bitcoin payment for your Limitum subscription.",
+  title: "Complete Payment — Constavita",
+  description: "Complete your Bitcoin payment for your Constavita subscription.",
   robots: { index: false, follow: false },
 };
 

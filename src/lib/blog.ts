@@ -5,6 +5,7 @@ export type BlogPost = {
   metaDescription: string;
   excerpt: string;
   author: string;
+  authorSlug: string;
   publishedAt: string; // ISO date
   updatedAt?: string;
   readingTime: number; // minutes
@@ -25,7 +26,8 @@ export const BLOG_POSTS: BlogPost[] = [
       "Learn how to calculate your burnout risk score using evidence-based metrics — workload, sleep, autonomy, and more. Spot the signs before burnout takes hold.",
     excerpt:
       "Most people don't realise they are burning out until they already have. A burnout risk score gives you a measurable warning before the crash arrives.",
-    author: "Limitum Editorial",
+    author: "Constavita Editorial",
+    authorSlug: "constavita-editorial",
     publishedAt: "2025-05-01",
     readingTime: 9,
     category: "Wellbeing",
@@ -114,7 +116,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
 <h2>The Value of Tracking Change Over Time</h2>
 <p>A single burnout risk score is useful. A 12-month trend is invaluable. Month-over-month score tracking reveals which life changes had actual impact on your resilience, separating genuine improvement from favourable circumstances. This is the difference between understanding your burnout risk and managing it.</p>
-<p>Limitum's burnout risk calculator saves your score history, so you can observe how life changes — a new job, a move, a relationship change — register in your resilience index over time.</p>
+<p>Constavita's burnout risk calculator saves your score history, so you can observe how life changes — a new job, a move, a relationship change — register in your resilience index over time.</p>
     `,
   },
 
@@ -127,7 +129,8 @@ export const BLOG_POSTS: BlogPost[] = [
       "Ancient Stoic philosophers developed a powerful decision framework that modern psychology confirms still works. Here is how to apply it to avoid regret in major life choices.",
     excerpt:
       "The Stoics solved decision regret 2,000 years ago. Modern decision science confirms their method. Here is how to apply both to the choices that matter.",
-    author: "Limitum Editorial",
+    author: "Constavita Editorial",
+    authorSlug: "constavita-editorial",
     publishedAt: "2025-05-08",
     readingTime: 10,
     category: "Decision Intelligence",
@@ -220,7 +223,8 @@ export const BLOG_POSTS: BlogPost[] = [
       "Net worth tells you what you have. Your Financial Peace Score tells you how you feel about it — and predicts long-term financial wellbeing better than any balance sheet.",
     excerpt:
       "Net worth is a snapshot. Financial peace is a state of being. The difference between the two explains why high earners still lie awake at night.",
-    author: "Limitum Editorial",
+    author: "Constavita Editorial",
+    authorSlug: "constavita-editorial",
     publishedAt: "2025-05-15",
     readingTime: 9,
     category: "Financial Wellness",
@@ -308,7 +312,8 @@ export const BLOG_POSTS: BlogPost[] = [
       "Gut feelings about work-life balance are unreliable. Here is the data-driven method — measuring hours, autonomy, purpose, and recovery — that actually predicts wellbeing.",
     excerpt:
       "\"I should work less\" is not a strategy. Measuring exactly where your hours go, and what returns each category produces, is.",
-    author: "Limitum Editorial",
+    author: "Constavita Editorial",
+    authorSlug: "constavita-editorial",
     publishedAt: "2025-05-22",
     readingTime: 8,
     category: "Time & Productivity",

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
+import { historyDateCutoff } from "@/lib/tier";
 
 function getWeekKey(date = new Date()): string {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -24,16 +25,27 @@ export async function GET(req: NextRequest) {
   const session = await requireAuth(req);
   if (session instanceof NextResponse) return session;
 
-  const ratings = await prisma.virtueRating.findMany({
-    where: { userId: session.userId },
-    orderBy: { weekKey: "desc" },
-    take: 26,
-  });
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { subscription: { select: { tier: true } } },
+    });
+    const cutoff = historyDateCutoff(user?.subscription?.tier);
+
+    const ratings = await prisma.virtueRating.findMany({
+      where: { userId: session.userId, ...(cutoff ? { createdAt: { gte: cutoff } } : {}) },
+      orderBy: { weekKey: "desc" },
+      take: 26,
+    });
 
   const currentWeekKey = getWeekKey();
   const thisWeek = ratings.find((r) => r.weekKey === currentWeekKey) ?? null;
 
   return NextResponse.json({ success: true, thisWeek, history: ratings });
+  } catch (err) {
+    console.error("Virtues GET error:", err);
+    return NextResponse.json({ success: false, thisWeek: null, history: [] }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {

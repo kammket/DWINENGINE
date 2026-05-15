@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Dashboard — Limitum",
-  description: "Your personal Limitum dashboard. View your peace scores, goals, achievements, and daily Stoic intention.",
+  title: "Dashboard — Constavita",
+  description: "Your personal Constavita dashboard. View your peace scores, goals, achievements, and daily Stoic intention.",
   robots: { index: false, follow: false },
 };
 

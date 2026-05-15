@@ -1,7 +1,7 @@
 import { PublicHeader, Footer } from "@/components/layout/PublicLayout";
 
 export const metadata = {
-  title: "GDPR Rights — Limitum",
+  title: "GDPR Rights — Constavita",
 };
 
 export default function GdprPage() {
@@ -16,8 +16,8 @@ export default function GdprPage() {
           <section>
             <h2 className="font-serif text-xl font-bold mb-2">1. Data Controller</h2>
             <p>
-              Limitum acts as the data controller for your personal data. For data-related inquiries,
-              contact us at <a href="mailto:privacy@limitum.app" className="text-soft-gold underline">privacy@limitum.app</a>.
+              Constavita acts as the data controller for your personal data. For data-related inquiries,
+              contact us at <a href="mailto:privacy@constavita.app" className="text-soft-gold underline">privacy@constavita.app</a>.
             </p>
           </section>
 
@@ -41,37 +41,37 @@ export default function GdprPage() {
                 {
                   right: "Right of Access (Art. 15)",
                   description: "You can request a copy of all personal data we hold about you, including your account details, calculator history, and AI reflections.",
-                  action: "Email privacy@limitum.app with subject: 'Data Access Request'",
+                  action: "Email privacy@constavita.app with subject: 'Data Access Request'",
                 },
                 {
                   right: "Right to Rectification (Art. 16)",
                   description: "You can correct inaccurate personal data. Most profile data can be updated directly in Settings.",
-                  action: "Update in Settings or email privacy@limitum.app",
+                  action: "Update in Settings or email privacy@constavita.app",
                 },
                 {
                   right: "Right to Erasure (Art. 17)",
                   description: "You can request deletion of all your personal data. You can do this via Settings → Data & Privacy → Delete Account.",
-                  action: "Settings → Data & Privacy, or email privacy@limitum.app",
+                  action: "Settings → Data & Privacy, or email privacy@constavita.app",
                 },
                 {
                   right: "Right to Restriction (Art. 18)",
                   description: "You can request that we restrict processing of your data in certain circumstances (e.g., while disputing accuracy).",
-                  action: "Email privacy@limitum.app",
+                  action: "Email privacy@constavita.app",
                 },
                 {
                   right: "Right to Data Portability (Art. 20)",
                   description: "You can request your personal data in a machine-readable format (JSON or CSV) to transfer to another service.",
-                  action: "Email privacy@limitum.app with subject: 'Data Portability Request'",
+                  action: "Email privacy@constavita.app with subject: 'Data Portability Request'",
                 },
                 {
                   right: "Right to Object (Art. 21)",
                   description: "You can object to processing based on legitimate interests at any time.",
-                  action: "Email privacy@limitum.app",
+                  action: "Email privacy@constavita.app",
                 },
                 {
                   right: "Right to Withdraw Consent",
                   description: "Where processing is based on consent (e.g., marketing), you can withdraw it at any time without affecting the lawfulness of prior processing.",
-                  action: "Account settings or email privacy@limitum.app",
+                  action: "Account settings or email privacy@constavita.app",
                 },
               ].map((item) => (
                 <div key={item.right} className="bg-white border border-stone-200 rounded-xl p-4">
@@ -113,7 +113,7 @@ export default function GdprPage() {
           <section>
             <h2 className="font-serif text-xl font-bold mb-2">7. Contact Our Data Protection Contact</h2>
             <p>
-              Email: <a href="mailto:privacy@limitum.app" className="text-soft-gold underline">privacy@limitum.app</a><br />
+              Email: <a href="mailto:privacy@constavita.app" className="text-soft-gold underline">privacy@constavita.app</a><br />
               Subject line: &ldquo;GDPR Request — [Your Right]&rdquo;<br />
               We will verify your identity before processing your request.
             </p>

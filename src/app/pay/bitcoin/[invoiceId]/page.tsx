@@ -226,7 +226,7 @@ export default function BitcoinPaymentPage() {
 
   const btcAmount = satoshisToBtc(invoice.satoshis);
   const usdDisplay = `$${(invoice.usdAmount / 100).toFixed(2)}`;
-  const bitcoinUri = `bitcoin:${invoice.btcAddress}?amount=${btcAmount}&label=Limitum`;
+  const bitcoinUri = `bitcoin:${invoice.btcAddress}?amount=${btcAmount}&label=Constavita`;
   const planLabel = PLAN_LABELS[invoice.plan] || invoice.plan;
 
   // ── confirmed ─────────────────────────────────────────────────────────────

@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getPostBySlug, getAllSlugs, BLOG_POSTS } from "@/lib/blog";
+import { getAuthor } from "@/lib/authors";
 import { PublicHeader, Footer } from "@/components/layout/PublicLayout";
-import { ArrowLeft, ArrowRight, Clock, Tag, Calendar, User } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock, Tag, Calendar, BookOpen, Twitter } from "lucide-react";
 
 // ─── Static generation ────────────────────────────────────────────────────────
 
@@ -22,7 +23,7 @@ export async function generateMetadata({
   const post = getPostBySlug(slug);
   if (!post) return { title: "Post not found" };
 
-  const url = `https://limitum.ai/blog/${post.slug}`;
+  const url = `https://constavita.com/blog/${post.slug}`;
 
   return {
     title: post.metaTitle,
@@ -38,7 +39,7 @@ export async function generateMetadata({
       modifiedTime: post.updatedAt ?? post.publishedAt,
       authors: [post.author],
       tags: post.tags,
-      siteName: "Limitum",
+      siteName: "Constavita",
     },
     twitter: {
       card: "summary_large_image",
@@ -71,36 +72,45 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const post = getPostBySlug(slug);
   if (!post) notFound();
 
+  const author = getAuthor(post.authorSlug);
+
   const relatedPosts = BLOG_POSTS.filter(
     (p) => p.slug !== post.slug && (p.category === post.category || p.tags.some((t) => post.tags.includes(t)))
   ).slice(0, 2);
 
-  // JSON-LD structured data — BlogPosting schema
+  // JSON-LD — BlogPosting with Person author schema for E-E-A-T
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     headline: post.metaTitle,
     description: post.metaDescription,
     author: {
-      "@type": "Organization",
+      "@type": "Person",
       name: post.author,
-      url: "https://limitum.ai",
+      url: `https://constavita.com/blog/author/${post.authorSlug}`,
+      jobTitle: author?.role,
+      knowsAbout: author?.expertise,
+      worksFor: {
+        "@type": "Organization",
+        name: "Constavita",
+        url: "https://constavita.com",
+      },
     },
     publisher: {
       "@type": "Organization",
-      name: "Limitum",
-      url: "https://limitum.ai",
+      name: "Constavita",
+      url: "https://constavita.com",
       logo: {
         "@type": "ImageObject",
-        url: "https://limitum.ai/logo.png",
+        url: "https://constavita.com/logo.png",
       },
     },
     datePublished: post.publishedAt,
     dateModified: post.updatedAt ?? post.publishedAt,
-    url: `https://limitum.ai/blog/${post.slug}`,
+    url: `https://constavita.com/blog/${post.slug}`,
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `https://limitum.ai/blog/${post.slug}`,
+      "@id": `https://constavita.com/blog/${post.slug}`,
     },
     keywords: post.keywords.join(", "),
     articleSection: post.category,
@@ -155,10 +165,17 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               </p>
 
               <div className="flex flex-wrap items-center gap-4 py-4 border-t border-b border-stone-100">
-                <div className="flex items-center gap-1.5 text-xs text-stone-500">
-                  <User className="w-3.5 h-3.5" />
-                  <span>{post.author}</span>
-                </div>
+                <Link
+                  href={`/blog/author/${post.authorSlug}`}
+                  className="flex items-center gap-2 group"
+                >
+                  <div className="w-7 h-7 bg-gradient-to-br from-soft-gold to-brand-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-xs font-bold">{post.author.charAt(0)}</span>
+                  </div>
+                  <span className="text-xs font-medium text-stone-600 group-hover:text-soft-gold transition-colors">
+                    {post.author}
+                  </span>
+                </Link>
                 <div className="flex items-center gap-1.5 text-xs text-stone-500">
                   <Calendar className="w-3.5 h-3.5" />
                   <time dateTime={post.publishedAt}>
@@ -240,6 +257,45 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                   Start Free — No Account Required
                   <ArrowRight className="w-4 h-4" />
                 </Link>
+              </div>
+            )}
+
+            {/* Author bio card */}
+            {author && (
+              <div className="mt-12 bg-stone-50 border border-stone-200 rounded-2xl p-6 flex flex-col sm:flex-row gap-5 items-start">
+                <div className="w-14 h-14 bg-gradient-to-br from-soft-gold to-brand-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-2xl font-bold font-serif">{author.name.charAt(0)}</span>
+                </div>
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <Link
+                      href={`/blog/author/${author.slug}`}
+                      className="font-semibold text-sm text-matte-black hover:text-soft-gold transition-colors"
+                    >
+                      {author.name}
+                    </Link>
+                    <span className="text-xs text-stone-400">{author.role}</span>
+                  </div>
+                  <p className="text-xs text-slate-calm leading-relaxed mb-3">{author.bio}</p>
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {author.expertise.map((tag) => (
+                      <span key={tag} className="inline-flex items-center gap-1 text-xs text-stone-500 bg-white border border-stone-200 px-2 py-0.5 rounded-full">
+                        <BookOpen className="w-2.5 h-2.5" />
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex gap-3">
+                    {author.social.twitter && (
+                      <a href={author.social.twitter} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-stone-400 hover:text-matte-black transition-colors">
+                        <Twitter className="w-3 h-3" /> Twitter
+                      </a>
+                    )}
+                    <Link href={`/blog/author/${author.slug}`} className="text-xs text-soft-gold hover:text-brand-600 transition-colors">
+                      All articles →
+                    </Link>
+                  </div>
+                </div>
               </div>
             )}
 
