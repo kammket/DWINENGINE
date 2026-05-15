@@ -89,15 +89,13 @@ export default function PricingPage() {
   const [loadingBtcPlan, setLoadingBtcPlan] = useState<string | null>(null);
   const [btcPrice, setBtcPrice] = useState<number | null>(null);
 
-  // Fetch live BTC price on mount and refresh every 2 minutes
+  // Fetch live BTC price via our server-side proxy (avoids CSP + rate limits)
   useEffect(() => {
     const fetchPrice = async () => {
       try {
-        const res = await fetch(
-          "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
-        );
+        const res = await fetch("/api/btc-price");
         const data = await res.json();
-        setBtcPrice(data?.bitcoin?.usd ?? null);
+        if (data?.price) setBtcPrice(data.price);
       } catch {
         // silent — non-critical
       }
