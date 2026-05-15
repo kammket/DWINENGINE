@@ -18,33 +18,46 @@ const PROTECTED_PREFIXES = [
   "/admin",
 ];
 
+const AUTH_ROUTES = ["/login", "/register"];
+
+async function isValidToken(token: string): Promise<boolean> {
+  try {
+    await jwtVerify(token, JWT_SECRET);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const token = req.cookies.get("constavita_session")?.value;
+  const authenticated = token ? await isValidToken(token) : false;
 
   const isProtected = PROTECTED_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(p + "/")
   );
 
-  if (!isProtected) return NextResponse.next();
-
-  const token = req.cookies.get("constavita_session")?.value;
-
-  if (!token) {
+  // Redirect unauthenticated users away from protected pages
+  if (isProtected && !authenticated) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("from", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  try {
-    await jwtVerify(token, JWT_SECRET);
-    return NextResponse.next();
-  } catch {
-    const loginUrl = new URL("/login", req.url);
-    loginUrl.searchParams.set("from", pathname);
-    const res = NextResponse.redirect(loginUrl);
+  // Redirect authenticated users away from login/register
+  if (AUTH_ROUTES.includes(pathname) && authenticated) {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
+  // Clear stale invalid cookie
+  if (token && !authenticated) {
+    const res = NextResponse.next();
     res.cookies.set("constavita_session", "", { maxAge: 0, path: "/" });
     return res;
   }
+
+  return NextResponse.next();
 }
 
 export const config = {
