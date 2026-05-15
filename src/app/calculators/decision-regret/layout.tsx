@@ -4,6 +4,36 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "What is a decision regret calculator?",
+          acceptedAnswer: { "@type": "Answer", text: "A decision regret calculator measures the quality of your decision-making process — not the outcome. It scores factors like information completeness, reversibility, values alignment, and emotional clarity. A high score means you made the decision well, even if the result was imperfect. A low score identifies where your process broke down." },
+        },
+        {
+          "@type": "Question",
+          name: "How do I reduce decision regret?",
+          acceptedAnswer: { "@type": "Answer", text: "Regret is reduced by improving process, not outcomes. Use the regret minimisation framework: ask yourself 'Will I regret NOT doing this at 80?' Ensure you have gathered sufficient information, considered reversibility, checked alignment with your values, and separated emotion from analysis before deciding." },
+        },
+        {
+          "@type": "Question",
+          name: "What is decision fatigue and how does this calculator help?",
+          acceptedAnswer: { "@type": "Answer", text: "Decision fatigue is the deterioration of decision quality after a prolonged session of choices. This calculator helps by giving you a structured framework — reducing the mental load of evaluating any single decision from scratch. By scoring the key dimensions, you can make higher-quality decisions even when cognitively depleted." },
+        },
+        {
+          "@type": "Question",
+          name: "What is a good decision quality score?",
+          acceptedAnswer: { "@type": "Answer", text: "A score of 75–100 indicates a high-quality decision process with good information, clear values alignment, and manageable reversibility. 50–74 is solid with room for improvement. Below 50 suggests significant gaps in your decision process that increase regret risk." },
+        },
+        {
+          "@type": "Question",
+          name: "Is the decision regret calculator free?",
+          acceptedAnswer: { "@type": "Answer", text: "Yes, it is completely free with no sign-up required to use. Creating a free account lets you save results and track your decision quality over time." },
+        },
+      ],
+    },
+    {
       "@type": "WebApplication",
       name: "Decision Regret Calculator",
       url: "https://constavita.com/calculators/decision-regret",

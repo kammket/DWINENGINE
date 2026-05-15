@@ -4,6 +4,36 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "What is a good financial peace score?",
+          acceptedAnswer: { "@type": "Answer", text: "A score of 70–100 indicates strong financial sustainability — your income covers expenses with room to save, your emergency fund is healthy, and your debt load is manageable. A score of 40–69 suggests areas to improve. Below 40 signals significant financial stress that warrants immediate attention." },
+        },
+        {
+          "@type": "Question",
+          name: "How is the financial peace score calculated?",
+          acceptedAnswer: { "@type": "Answer", text: "The score is a weighted composite of five factors: income-to-expense ratio (30%), emergency fund coverage in months (25%), debt-to-income ratio (20%), savings rate (15%), and self-rated financial stress (10%). Each factor is normalised to 0–100 and combined for your final index." },
+        },
+        {
+          "@type": "Question",
+          name: "How many months of emergency fund should I have?",
+          acceptedAnswer: { "@type": "Answer", text: "Most financial planners recommend 3–6 months of essential expenses for employees and 6–12 months for self-employed individuals or those with variable income. The calculator scores you maximally at 6 or more months." },
+        },
+        {
+          "@type": "Question",
+          name: "What debt-to-income ratio is considered healthy?",
+          acceptedAnswer: { "@type": "Answer", text: "A debt-to-income ratio below 20% is considered excellent. 20–35% is manageable. Above 43% is the threshold most lenders consider high risk, and the calculator will reflect elevated stress in your score." },
+        },
+        {
+          "@type": "Question",
+          name: "Is the financial peace calculator free?",
+          acceptedAnswer: { "@type": "Answer", text: "Yes, the Financial Peace Calculator is completely free with no credit card required. You can run the assessment as many times as you like and save your history with a free account." },
+        },
+      ],
+    },
+    {
       "@type": "WebApplication",
       name: "Financial Peace Calculator",
       url: "https://constavita.com/calculators/financial-peace",

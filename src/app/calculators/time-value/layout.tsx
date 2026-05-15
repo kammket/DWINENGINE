@@ -4,6 +4,36 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "What is a time value calculator for personal decisions?",
+          acceptedAnswer: { "@type": "Answer", text: "A personal time value calculator measures how effectively you allocate your waking hours across categories that matter most: sleep quality, deep focused work, physical exercise, meaningful relationships, and personal recovery. Unlike a financial time-value-of-money calculator, this tool produces a Time Sustainability Index — a 0–100 score reflecting whether your current time allocation supports long-term wellbeing and productivity." },
+        },
+        {
+          "@type": "Question",
+          name: "How do I calculate the value of my time?",
+          acceptedAnswer: { "@type": "Answer", text: "To calculate the value of your time: (1) Audit how you actually spend your hours across a typical week — track sleep, deep work, shallow work, exercise, social time, and leisure. (2) Compare this to evidence-based benchmarks (7–9 hours sleep, 4+ hours deep work, 3+ exercise hours per week). (3) Score each category and combine for an overall time sustainability index. The Constavita Time Value Calculator does this automatically." },
+        },
+        {
+          "@type": "Question",
+          name: "How many hours of deep work should I do per day?",
+          acceptedAnswer: { "@type": "Answer", text: "Research by Cal Newport and cognitive scientists suggests 4 hours of genuine deep work per day is near the upper limit for most people. Elite performers average 4–6 hours of focused work, with the rest devoted to planning, administration, and recovery. The Time Value Calculator rewards 3–5 deep work hours per day as optimal." },
+        },
+        {
+          "@type": "Question",
+          name: "What is a good time sustainability score?",
+          acceptedAnswer: { "@type": "Answer", text: "A score of 70–100 means your time is well-allocated across the key dimensions — you are sleeping enough, working with focus, exercising regularly, and investing in relationships. 50–69 is average with clear improvement areas. Below 50 suggests your time allocation is misaligned with long-term sustainability and wellbeing." },
+        },
+        {
+          "@type": "Question",
+          name: "Is the time value calculator free?",
+          acceptedAnswer: { "@type": "Answer", text: "Yes. The Time Value Calculator is free with no credit card required. Save your results and track progress over time with a free account." },
+        },
+      ],
+    },
+    {
       "@type": "WebApplication",
       name: "Time Value Calculator",
       url: "https://constavita.com/calculators/time-value",

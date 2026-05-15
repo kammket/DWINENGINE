@@ -48,13 +48,23 @@ const jsonLd = {
 };
 
 export const metadata: Metadata = {
-  title: "FAQ — Constavita",
+  title: "FAQ — Burnout Calculator, Financial Peace Score & Decision Tools | Constavita",
   description:
-    "Answers to common questions about Constavita — how the calculators work, AI reflections, Stoic philosophy, privacy, pricing, and account management.",
+    "Answers to common questions about Constavita's burnout risk calculator, financial peace score, relationship sustainability, decision quality, and time value tools. How they work, privacy, pricing.",
+  keywords: [
+    "constavita faq",
+    "burnout calculator questions",
+    "financial peace score faq",
+    "decision quality calculator",
+    "relationship sustainability faq",
+    "stoic decision tools",
+    "life calculator privacy",
+    "constavita free tier",
+  ],
   alternates: { canonical: "https://constavita.com/faq" },
   openGraph: {
-    title: "FAQ — Constavita",
-    description: "Everything you need to know about Constavita's decision intelligence tools, privacy, and pricing.",
+    title: "FAQ — Burnout, Financial Peace & Decision Calculators | Constavita",
+    description: "Everything you need to know about Constavita's burnout, financial peace, relationship, decision, and time value calculators.",
     url: "https://constavita.com/faq",
     type: "website",
   },

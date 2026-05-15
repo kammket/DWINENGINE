@@ -4,6 +4,36 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "What is a relationship sustainability calculator?",
+          acceptedAnswer: { "@type": "Answer", text: "A relationship sustainability calculator measures the long-term health of a relationship across multiple evidence-based dimensions: communication quality, shared values alignment, conflict resolution effectiveness, emotional support depth, and growth compatibility. It produces a 0–100 score that reflects overall relationship sustainability, not just current satisfaction." },
+        },
+        {
+          "@type": "Question",
+          name: "Is my relationship healthy? How can I tell?",
+          acceptedAnswer: { "@type": "Answer", text: "Signs of a healthy relationship include consistent open communication, the ability to resolve conflict without contempt, feeling emotionally supported, shared direction for the future, and continued personal growth. A score above 70 on the Relationship Sustainability Calculator suggests a healthy, resilient dynamic. Below 50 indicates dimensions that need attention." },
+        },
+        {
+          "@type": "Question",
+          name: "What are the most important factors in relationship sustainability?",
+          acceptedAnswer: { "@type": "Answer", text: "Research consistently identifies four pillars: communication (how freely you express needs and feelings), conflict resolution (how disputes are handled), shared values (alignment on life priorities), and emotional support (whether each partner feels seen and supported). This calculator weights all four equally with bonus consideration for growth compatibility." },
+        },
+        {
+          "@type": "Question",
+          name: "Can I use this calculator for friendships, not just romantic relationships?",
+          acceptedAnswer: { "@type": "Answer", text: "Yes. The dimensions — communication, values alignment, conflict resolution, emotional support, and growth — apply equally well to close friendships, work partnerships, and family relationships. Interpret the results in the context of the relationship type." },
+        },
+        {
+          "@type": "Question",
+          name: "Is the relationship sustainability calculator free?",
+          acceptedAnswer: { "@type": "Answer", text: "Yes, it is completely free. You can take the assessment as many times as needed. A free account lets you save and compare scores over time to track relationship progress." },
+        },
+      ],
+    },
+    {
       "@type": "WebApplication",
       name: "Relationship Sustainability Calculator",
       url: "https://constavita.com/calculators/relationship-sustainability",
