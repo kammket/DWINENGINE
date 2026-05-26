@@ -2,11 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { SliderField } from "@/components/ui/FormFields";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { ArrowRight, ArrowLeft, CheckCircle2, Sparkles } from "lucide-react";
+import { calculateOverallAssessment } from "@/lib/calculations";
+import {
+  ArrowRight, ArrowLeft, CheckCircle2, Sparkles, Lock,
+  Eye, EyeOff, Crown, Zap, Building2,
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 const WORK_TYPES = [
@@ -61,12 +66,100 @@ type OnboardingData = {
   goals: string[];
 };
 
+type PreviewScores = ReturnType<typeof calculateOverallAssessment>;
+
+const FREE_FEATURES = [
+  "Full assessment dashboard",
+  "All 5 life calculators",
+  "Decision Journal & Morning Intention",
+  "Burnout risk tracking",
+  "30-day history",
+  "Weekly virtues compass",
+];
+
+const PREMIUM_FEATURES = [
+  "Everything in Free",
+  "AI reflections (Logos)",
+  "Scenario simulator",
+  "Advanced trend analytics",
+  "1-year history",
+  "PDF & CSV data export",
+];
+
+const ENTERPRISE_FEATURES = [
+  "Everything in Premium",
+  "Team dashboards",
+  "API access",
+  "Custom AI configuration",
+  "SSO & Security",
+  "Unlimited history",
+];
+
+function ScoreMeter({ score, label }: { score: number; label: string }) {
+  const color = score >= 70 ? "bg-emerald-500" : score >= 50 ? "bg-soft-gold" : "bg-rose-400";
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-1">
+        <span className="text-xs text-slate-calm">{label}</span>
+        <span className="text-xs font-semibold text-matte-black">{score}</span>
+      </div>
+      <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden">
+        <motion.div
+          className={`h-full rounded-full ${color}`}
+          initial={{ width: 0 }}
+          animate={{ width: `${score}%` }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function RiskMeter({ risk, label }: { risk: number; label: string }) {
+  const invertedScore = 100 - risk;
+  const color = invertedScore >= 70 ? "bg-emerald-500" : invertedScore >= 50 ? "bg-soft-gold" : "bg-rose-400";
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-1">
+        <span className="text-xs text-slate-calm">{label}</span>
+        <span className={`text-xs font-semibold ${risk >= 60 ? "text-rose-500" : "text-emerald-600"}`}>
+          {risk >= 60 ? "High risk" : risk >= 40 ? "Moderate" : "Low risk"}
+        </span>
+      </div>
+      <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden">
+        <motion.div
+          className={`h-full rounded-full ${color}`}
+          initial={{ width: 0 }}
+          animate={{ width: `${invertedScore}%` }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        />
+      </div>
+    </div>
+  );
+}
+
+const passwordRequirements = [
+  { regex: /.{8,}/, label: "At least 8 characters" },
+  { regex: /[A-Z]/, label: "One uppercase letter" },
+  { regex: /[0-9]/, label: "One number" },
+];
+
 export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [aiInsight, setAiInsight] = useState<string | null>(null);
+  const [guestScores, setGuestScores] = useState<PreviewScores | null>(null);
+
+  // Inline signup state (shown on guest step 4)
+  const [regName, setRegName] = useState("");
+  const [regEmail, setRegEmail] = useState("");
+  const [regPassword, setRegPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [regLoading, setRegLoading] = useState(false);
+
   const router = useRouter();
-  const { refreshUser } = useAuth();
+  const { user, register, refreshUser } = useAuth();
+  const isGuest = !user;
 
   const [data, setData] = useState<OnboardingData>({
     ageRange: "",
@@ -85,6 +178,24 @@ export default function OnboardingPage() {
     arr.includes(item) ? arr.filter((i) => i !== item) : [...arr, item];
 
   const handleSubmit = async () => {
+    if (isGuest) {
+      // Compute scores client-side and show preview
+      const scores = calculateOverallAssessment({
+        stressPerception: data.stressPerception,
+        financialComfort: data.financialComfort,
+        timeFreedom: data.timeFreedom,
+        relationshipSupport: data.relationshipSupport,
+        energyLevels: data.energyLevels,
+        cognitiveLoad: data.cognitiveLoad,
+      });
+      setGuestScores(scores);
+      try {
+        sessionStorage.setItem("pendingOnboarding", JSON.stringify(data));
+      } catch { /* ignore if sessionStorage unavailable */ }
+      setStep(4);
+      return;
+    }
+
     setSubmitting(true);
     try {
       const res = await fetch("/api/onboarding", {
@@ -95,7 +206,6 @@ export default function OnboardingPage() {
       const json = await res.json();
 
       if (json.success) {
-        // Fetch AI insight
         try {
           const aiRes = await fetch("/api/ai/reflect", {
             method: "POST",
@@ -120,6 +230,41 @@ export default function OnboardingPage() {
     setSubmitting(false);
   };
 
+  // Guest inline signup — register + save onboarding data + go to dashboard
+  const handleGuestRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRegLoading(true);
+    try {
+      const result = await register(regName, regEmail, regPassword);
+      if (result.success) {
+        // Save onboarding data now that we have an auth session
+        try {
+          await fetch("/api/onboarding", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+        } catch { /* non-fatal, user can re-run onboarding from settings */ }
+        try { sessionStorage.removeItem("pendingOnboarding"); } catch { /* ignore */ }
+        await refreshUser();
+        toast.success("Account created. Your profile has been saved.");
+        router.push("/dashboard");
+      } else {
+        toast.error(result.error || "Registration failed.");
+      }
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    }
+    setRegLoading(false);
+  };
+
+  const overallLabel =
+    guestScores && guestScores.overallScore >= 75
+      ? "Strong foundation"
+      : guestScores && guestScores.overallScore >= 55
+      ? "Developing balance"
+      : "Significant growth opportunities";
+
   return (
     <div className="min-h-screen bg-gradient-premium flex flex-col items-center justify-center px-4 py-12">
       {/* Progress bar */}
@@ -134,12 +279,12 @@ export default function OnboardingPage() {
 
       {/* Logo */}
       <div className="fixed top-6 left-6">
-        <div className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <div className="w-7 h-7 bg-gradient-to-br from-soft-gold to-brand-600 rounded-xl flex items-center justify-center">
             <span className="text-white font-bold text-xs">L</span>
           </div>
           <span className="font-serif font-semibold text-matte-black">Constavita</span>
-        </div>
+        </Link>
       </div>
 
       <div className="w-full max-w-2xl">
@@ -160,9 +305,8 @@ export default function OnboardingPage() {
               </div>
 
               <div className="space-y-8">
-                {/* Age range */}
                 <div>
-                  <label className="label-field text-base">What's your age range?</label>
+                  <label className="label-field text-base">What&apos;s your age range?</label>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {AGE_RANGES.map((age) => (
                       <button
@@ -180,7 +324,6 @@ export default function OnboardingPage() {
                   </div>
                 </div>
 
-                {/* Work type */}
                 <div>
                   <label className="label-field text-base">How would you describe your primary role?</label>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
@@ -279,7 +422,7 @@ export default function OnboardingPage() {
                   onChange={(v) => setData({ ...data, cognitiveLoad: v })}
                   minLabel="Minimal"
                   maxLabel="Overwhelming"
-                  description="How much mental space do you feel you're currently using?"
+                  description="How much mental space do you feel you&apos;re currently using?"
                 />
               </div>
 
@@ -373,10 +516,213 @@ export default function OnboardingPage() {
             </motion.div>
           )}
 
-          {/* Step 4: Complete */}
-          {step === 4 && (
+          {/* Step 4A: GUEST — Preview results + inline signup */}
+          {step === 4 && isGuest && guestScores && (
             <motion.div
-              key="step4"
+              key="step4-guest"
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              {/* Score reveal */}
+              <div className="text-center mb-8">
+                <span className="text-xs font-semibold text-soft-gold uppercase tracking-widest mb-3 block">Your Peace Intelligence Baseline</span>
+                <div className="relative inline-flex items-center justify-center mb-4">
+                  <svg width="120" height="120" viewBox="0 0 120 120" className="-rotate-90">
+                    <circle cx="60" cy="60" r="52" fill="none" stroke="#f5f0e8" strokeWidth="10" />
+                    <motion.circle
+                      cx="60" cy="60" r="52"
+                      fill="none"
+                      stroke="url(#scoreGrad)"
+                      strokeWidth="10"
+                      strokeLinecap="round"
+                      strokeDasharray={`${2 * Math.PI * 52}`}
+                      initial={{ strokeDashoffset: 2 * Math.PI * 52 }}
+                      animate={{ strokeDashoffset: 2 * Math.PI * 52 * (1 - guestScores.overallScore / 100) }}
+                      transition={{ duration: 1.2, ease: "easeOut" }}
+                    />
+                    <defs>
+                      <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#C9A84C" />
+                        <stop offset="100%" stopColor="#8B6914" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className="absolute text-center">
+                    <span className="text-3xl font-bold text-matte-black">{guestScores.overallScore}</span>
+                    <span className="block text-xs text-slate-calm">/ 100</span>
+                  </div>
+                </div>
+                <h2 className="font-serif text-2xl font-bold text-matte-black mb-1">{overallLabel}</h2>
+                <p className="text-sm text-slate-calm max-w-sm mx-auto">
+                  Based on your responses across 6 life dimensions. Create a free account to save this and track your progress.
+                </p>
+              </div>
+
+              {/* Dimension scores */}
+              <div className="bg-white rounded-3xl p-6 shadow-premium mb-6">
+                <h3 className="text-sm font-semibold text-matte-black mb-4">Your 6-Dimension Baseline</h3>
+                <div className="space-y-3">
+                  <ScoreMeter score={guestScores.peaceScore} label="Peace Score" />
+                  <RiskMeter risk={guestScores.burnoutRisk} label="Burnout Risk" />
+                  <ScoreMeter score={guestScores.financialStab} label="Financial Stability" />
+                  <ScoreMeter score={guestScores.emotionalRec} label="Emotional Recovery" />
+                  <ScoreMeter score={guestScores.timeFreedom} label="Time Freedom" />
+                  <ScoreMeter score={guestScores.futureSustain} label="Future Sustainability" />
+                </div>
+              </div>
+
+              {/* Tier comparison */}
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-matte-black mb-3 text-center">What you unlock with each plan</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  {/* FREE */}
+                  <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-100">
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      <span className="text-xs font-bold text-matte-black">Free</span>
+                    </div>
+                    <div className="text-lg font-bold text-matte-black mb-3">$0<span className="text-xs font-normal text-slate-calm">/mo</span></div>
+                    <ul className="space-y-1.5">
+                      {FREE_FEATURES.map((f) => (
+                        <li key={f} className="flex items-start gap-1.5">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-500 mt-0.5 shrink-0" />
+                          <span className="text-xs text-slate-calm leading-tight">{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* PREMIUM */}
+                  <div className="bg-gradient-to-b from-amber-50 to-white rounded-2xl p-4 shadow-premium border-2 border-soft-gold relative">
+                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
+                      <span className="bg-soft-gold text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">Popular</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <Crown className="w-4 h-4 text-soft-gold" />
+                      <span className="text-xs font-bold text-matte-black">Premium</span>
+                    </div>
+                    <div className="text-lg font-bold text-matte-black mb-3">$19<span className="text-xs font-normal text-slate-calm">/mo</span></div>
+                    <ul className="space-y-1.5">
+                      {PREMIUM_FEATURES.map((f) => (
+                        <li key={f} className="flex items-start gap-1.5">
+                          <Sparkles className="w-3 h-3 text-soft-gold mt-0.5 shrink-0" />
+                          <span className="text-xs text-slate-calm leading-tight">{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* ENTERPRISE */}
+                  <div className="bg-white rounded-2xl p-4 shadow-sm border border-stone-100">
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <Building2 className="w-4 h-4 text-slate-calm" />
+                      <span className="text-xs font-bold text-matte-black">Enterprise</span>
+                    </div>
+                    <div className="text-lg font-bold text-matte-black mb-3">$99<span className="text-xs font-normal text-slate-calm">/mo</span></div>
+                    <ul className="space-y-1.5">
+                      {ENTERPRISE_FEATURES.map((f) => (
+                        <li key={f} className="flex items-start gap-1.5">
+                          <Zap className="w-3 h-3 text-slate-400 mt-0.5 shrink-0" />
+                          <span className="text-xs text-slate-calm leading-tight">{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Inline signup form */}
+              <div className="bg-white rounded-3xl p-6 shadow-premium border border-stone-100">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-6 h-6 bg-amber-50 rounded-lg flex items-center justify-center">
+                    <span className="text-sm">🏛️</span>
+                  </div>
+                  <h3 className="font-serif text-lg font-bold text-matte-black">Save your results — it&apos;s free</h3>
+                </div>
+                <p className="text-xs text-slate-calm mb-4">Create an account to save your baseline, track progress, and access all free features. No credit card required.</p>
+
+                <form onSubmit={handleGuestRegister} className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Your name"
+                    value={regName}
+                    onChange={(e) => setRegName(e.target.value)}
+                    required
+                    minLength={2}
+                    autoComplete="name"
+                    className="input-field"
+                  />
+                  <input
+                    type="email"
+                    placeholder="Email address"
+                    value={regEmail}
+                    onChange={(e) => setRegEmail(e.target.value)}
+                    required
+                    autoComplete="email"
+                    className="input-field"
+                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Create a password"
+                      value={regPassword}
+                      onChange={(e) => setRegPassword(e.target.value)}
+                      required
+                      autoComplete="new-password"
+                      className="input-field pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-calm hover:text-matte-black transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {regPassword.length > 0 && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="space-y-1 px-1">
+                      {passwordRequirements.map((req) => {
+                        const met = req.regex.test(regPassword);
+                        return (
+                          <div key={req.label} className="flex items-center gap-1.5">
+                            <CheckCircle2 className={`w-3 h-3 ${met ? "text-green-500" : "text-stone-300"}`} />
+                            <span className={`text-xs ${met ? "text-green-600" : "text-stone-400"}`}>{req.label}</span>
+                          </div>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                  <Button type="submit" variant="gold" fullWidth size="lg" loading={regLoading}
+                    icon={<ArrowRight className="w-4 h-4" />} iconPosition="right">
+                    Create Free Account &amp; Save Results
+                  </Button>
+                </form>
+
+                <div className="mt-4 pt-4 border-t border-stone-100 flex items-center justify-between flex-wrap gap-2">
+                  <p className="text-xs text-slate-calm">
+                    Already have an account?{" "}
+                    <Link href="/login" className="text-soft-gold font-medium hover:text-brand-600 transition-colors">Sign In</Link>
+                  </p>
+                  <Link href="/pricing" className="text-xs text-slate-calm hover:text-matte-black transition-colors flex items-center gap-1">
+                    <Lock className="w-3 h-3" /> View all plans
+                  </Link>
+                </div>
+              </div>
+
+              <p className="text-center text-xs text-stone-400 mt-4 px-4">
+                By creating an account you agree to our{" "}
+                <Link href="/legal/terms" className="underline">Terms</Link>
+                {" "}and{" "}
+                <Link href="/legal/privacy" className="underline">Privacy Policy</Link>.
+              </p>
+            </motion.div>
+          )}
+
+          {/* Step 4B: AUTHENTICATED — Completion screen */}
+          {step === 4 && !isGuest && (
+            <motion.div
+              key="step4-auth"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}

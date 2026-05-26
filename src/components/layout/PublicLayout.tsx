@@ -54,7 +54,7 @@ export function PublicHeader() {
               <Link href="/login">
                 <Button variant="ghost" size="sm">Sign In</Button>
               </Link>
-              <Link href="/register">
+              <Link href="/onboarding">
                 <Button variant="primary" size="sm">Get Started Free</Button>
               </Link>
             </>
@@ -94,7 +94,7 @@ export function PublicHeader() {
                   <Link href="/login" onClick={() => setMobileOpen(false)}>
                     <Button variant="secondary" fullWidth>Sign In</Button>
                   </Link>
-                  <Link href="/register" onClick={() => setMobileOpen(false)}>
+                  <Link href="/onboarding" onClick={() => setMobileOpen(false)}>
                     <Button variant="primary" fullWidth>Get Started Free</Button>
                   </Link>
                 </>

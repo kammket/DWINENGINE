@@ -143,7 +143,7 @@ export default function HomeClient({ dailyReflection }: { dailyReflection: Retur
             transition={{ duration: 0.75, delay: 0.3 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8"
           >
-            <Link href="/register">
+            <Link href="/onboarding">
               <Button variant="gold" size="lg" icon={<ArrowRight className="w-5 h-5" />} iconPosition="right">
                 Begin Your Assessment — Free
               </Button>
@@ -404,7 +404,7 @@ export default function HomeClient({ dailyReflection }: { dailyReflection: Retur
             <p className="text-stone-400 mb-10 leading-relaxed text-lg font-light">
               Your first assessment is free. Understand your current life sustainability in under five minutes.
             </p>
-            <Link href="/register">
+            <Link href="/onboarding">
               <Button variant="gold" size="lg" icon={<ArrowRight className="w-5 h-5" />} iconPosition="right">
                 Begin with Clarity — Free
               </Button>

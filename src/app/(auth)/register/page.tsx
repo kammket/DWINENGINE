@@ -73,9 +73,24 @@ function RegisterForm() {
     setLoading(true);
     const result = await register(name, email, password);
     if (result.success) {
-      toast.success("Account created. Let's calibrate your baseline.");
-      router.refresh();
-      router.push("/onboarding");
+      const pending = (() => { try { return sessionStorage.getItem("pendingOnboarding"); } catch { return null; } })();
+      if (pending) {
+        try {
+          await fetch("/api/onboarding", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: pending,
+          });
+          sessionStorage.removeItem("pendingOnboarding");
+        } catch { /* non-fatal */ }
+        toast.success("Account created. Your profile has been saved.");
+        router.refresh();
+        router.push("/dashboard");
+      } else {
+        toast.success("Account created. Let's calibrate your baseline.");
+        router.refresh();
+        router.push("/onboarding");
+      }
     } else {
       toast.error(result.error || "Registration failed.");
     }
@@ -134,9 +149,24 @@ function RegisterForm() {
       const json = await res.json();
       if (json.success) {
         await refreshUser();
-        toast.success("Account created with wallet.");
-        router.refresh();
-        router.push("/onboarding");
+        const pending = (() => { try { return sessionStorage.getItem("pendingOnboarding"); } catch { return null; } })();
+        if (pending) {
+          try {
+            await fetch("/api/onboarding", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: pending,
+            });
+            sessionStorage.removeItem("pendingOnboarding");
+          } catch { /* non-fatal */ }
+          toast.success("Account created. Your profile has been saved.");
+          router.refresh();
+          router.push("/dashboard");
+        } else {
+          toast.success("Account created with wallet.");
+          router.refresh();
+          router.push("/onboarding");
+        }
       } else {
         toast.error(json.error || "Registration failed.");
       }
