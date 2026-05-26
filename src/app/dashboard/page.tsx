@@ -1,13 +1,16 @@
 "use client";
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState } from "react";
-import { useRef } from "react";
+import { Suspense } from "react";
 import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/layout/Sidebar";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { ScoreRing, MetricBar } from "@/components/ui/ScoreVisuals";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { UpgradeToast } from "@/components/dashboard/UpgradeToast";
 import Link from "next/link";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -24,7 +27,6 @@ import { getDailyReflection } from "@/lib/stoic";
 import { MementoMori } from "@/components/ui/MementoMori";
 import { VirtueCompass } from "@/components/ui/VirtueCompass";
 import toast from "react-hot-toast";
-import { useSearchParams } from "next/navigation";
 
 type DashboardData = {
   latestAssessment: Assessment | null;
@@ -92,12 +94,8 @@ const CALC_TYPE_LABELS: Record<string, string> = {
   TIME_VALUE: "Time Value",
 };
 
-
-
 export default function DashboardPage() {
   const { user } = useAuth();
-  const searchParams = useSearchParams();
-  const upgradeToastShown = useRef(false);
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [aiReflection, setAiReflection] = useState<string | null>(null);
@@ -126,19 +124,6 @@ export default function DashboardPage() {
       if (intention.success && intention.today) setIntentionToday(intention.today);
     }).finally(() => setLoading(false));
   }, []);
-
-  useEffect(() => {
-    if (upgradeToastShown.current) return;
-    if (searchParams.get("upgraded") !== "true") return;
-
-    if (searchParams.get("source") === "wallet") {
-      toast.success("Upgrade complete. Paid from your wallet balance.");
-    } else {
-      toast.success("Upgrade complete. Your subscription is now active.");
-    }
-
-    upgradeToastShown.current = true;
-  }, [searchParams]);
 
   const requestReflection = async () => {
     if (!data?.latestAssessment) return;
@@ -205,6 +190,9 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
+      <Suspense fallback={null}>
+        <UpgradeToast />
+      </Suspense>
       <div className="space-y-8">
         {/* Header */}
         <motion.div
