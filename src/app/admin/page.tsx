@@ -110,7 +110,7 @@ function expiresIn(iso: string) {
 
 // ── tabs ───────────────────────────────────────────────────────────────────────
 
-type Tab = "overview" | "payments";
+type Tab = "overview" | "payments" | "users";
 
 // ── component ──────────────────────────────────────────────────────────────────
 
@@ -139,6 +139,10 @@ export default function AdminPage() {
   const [overrideEmail, setOverrideEmail] = useState("");
   const [overrideTier, setOverrideTier] = useState<"FREE" | "PREMIUM" | "ENTERPRISE">("PREMIUM");
   const [overriding, setOverriding] = useState(false);
+
+  // Users
+  const [users, setUsers] = useState<Array<{id: string; email: string; name: string | null; createdAt: string; updatedAt: string; subscription: {tier: string; status: string; currentPeriodStart: string; currentPeriodEnd: string; cancelAtPeriodEnd: boolean} | null; wallet: {balanceCents: number} | null}>>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -194,12 +198,30 @@ export default function AdminPage() {
     setTopUpsLoading(false);
   }, []);
 
+  const fetchUsers = useCallback(async () => {
+    setUsersLoading(true);
+    try {
+      const res = await fetch("/api/admin/users");
+      const json = await res.json();
+      if (json.success) {
+        setUsers(json.users);
+      } else {
+        toast.error(json.error || "Failed to load users.");
+      }
+    } catch {
+      toast.error("Could not reach users API.");
+    }
+    setUsersLoading(false);
+  }, []);
+
   useEffect(() => {
     if (tab === "payments") {
       fetchPayments();
       fetchTopUps();
+    } else if (tab === "users") {
+      fetchUsers();
     }
-  }, [tab, fetchPayments, fetchTopUps]);
+  }, [tab, fetchPayments, fetchTopUps, fetchUsers]);
 
   const handleConfirm = async (invoiceId: string) => {
     setConfirmingId(invoiceId);
@@ -316,7 +338,7 @@ export default function AdminPage() {
             <p className="text-slate-calm text-sm">Platform health, payments, and account management.</p>
           </div>
           <button
-            onClick={() => { fetchStats(); if (tab === "payments") fetchPayments(); }}
+            onClick={() => { fetchStats(); if (tab === "payments") { fetchPayments(); fetchTopUps(); } else if (tab === "users") fetchUsers(); }}
             className="p-2 rounded-xl hover:bg-stone-100 transition-colors text-slate-calm"
             title="Refresh"
           >
@@ -326,7 +348,7 @@ export default function AdminPage() {
 
         {/* Tab bar */}
         <div className="flex gap-1 bg-stone-100 rounded-xl p-1 w-fit">
-          {(["overview", "payments"] as Tab[]).map((t) => (
+          {(["overview", "users", "payments"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -334,7 +356,7 @@ export default function AdminPage() {
                 tab === t ? "bg-white text-matte-black shadow-sm" : "text-slate-calm hover:text-matte-black"
               }`}
             >
-              {t === "payments" ? "Payments & Activation" : "Overview"}
+              {t === "payments" ? "Payments & Activation" : t === "users" ? "Users" : "Overview"}
             </button>
           ))}
         </div>
@@ -463,6 +485,107 @@ export default function AdminPage() {
               </>
             )}
           </>
+        )}
+
+        {/* ── USERS TAB ─────────────────────────────────────────────────────── */}
+        {tab === "users" && (
+          <div className="space-y-6">
+            <Card padding="lg">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-slate-calm" />
+                    <CardTitle>All Users</CardTitle>
+                    <span className="text-xs text-slate-calm bg-stone-100 px-2 py-0.5 rounded-full">{users.length}</span>
+                  </div>
+                  <button
+                    onClick={fetchUsers}
+                    className="p-1.5 rounded-lg hover:bg-stone-100 transition-colors text-slate-calm"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${usersLoading ? "animate-spin" : ""}`} />
+                  </button>
+                </div>
+                <CardDescription>
+                  Complete list of registered users with subscription and wallet information.
+                </CardDescription>
+              </CardHeader>
+
+              {usersLoading && (
+                <div className="flex justify-center py-8">
+                  <div className="w-5 h-5 border-2 border-soft-gold border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+
+              {!usersLoading && users.length === 0 && (
+                <div className="text-center py-10 text-slate-calm">
+                  <Users className="w-8 h-8 mx-auto mb-2 text-stone-300" />
+                  <p className="text-sm">No users yet.</p>
+                </div>
+              )}
+
+              {!usersLoading && users.length > 0 && (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-stone-200 text-left">
+                        <th className="pb-3 px-4 font-medium text-slate-calm">Email</th>
+                        <th className="pb-3 px-4 font-medium text-slate-calm">Name</th>
+                        <th className="pb-3 px-4 font-medium text-slate-calm">Tier</th>
+                        <th className="pb-3 px-4 font-medium text-slate-calm">Status</th>
+                        <th className="pb-3 px-4 font-medium text-slate-calm">Wallet</th>
+                        <th className="pb-3 px-4 font-medium text-slate-calm">Joined</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.map((user) => (
+                        <tr key={user.id} className="border-b border-stone-100 hover:bg-stone-50 transition-colors">
+                          <td className="py-3 px-4 text-matte-black font-medium">{user.email}</td>
+                          <td className="py-3 px-4 text-matte-black">{user.name || "—"}</td>
+                          <td className="py-3 px-4">
+                            {user.subscription ? (
+                              <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                                user.subscription.tier === "PREMIUM" ? "bg-amber-50 text-amber-700" :
+                                user.subscription.tier === "ENTERPRISE" ? "bg-slate-100 text-slate-700" :
+                                "bg-stone-100 text-stone-600"
+                              }`}>
+                                {user.subscription.tier}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-slate-calm">Free</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            {user.subscription ? (
+                              <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                                user.subscription.status === "ACTIVE" ? "bg-green-50 text-green-700" :
+                                user.subscription.status === "CANCELLED" ? "bg-red-50 text-red-700" :
+                                "bg-yellow-50 text-yellow-700"
+                              }`}>
+                                {user.subscription.status}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-slate-calm">—</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            {user.wallet ? (
+                              <div className="text-xs">
+                                <div className="text-matte-black font-medium">${(user.wallet.balanceCents / 100).toFixed(2)}</div>
+                                <div className="text-slate-calm">{(user.wallet.balanceCents / 100_000_000).toFixed(8)} BTC</div>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-slate-calm">—</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-slate-calm text-xs">{timeAgo(user.createdAt)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </Card>
+          </div>
         )}
 
         {/* ── PAYMENTS TAB ──────────────────────────────────────────────────── */}
