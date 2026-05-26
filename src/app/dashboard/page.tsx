@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRef } from "react";
 import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/layout/Sidebar";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
@@ -23,6 +24,7 @@ import { getDailyReflection } from "@/lib/stoic";
 import { MementoMori } from "@/components/ui/MementoMori";
 import { VirtueCompass } from "@/components/ui/VirtueCompass";
 import toast from "react-hot-toast";
+import { useSearchParams } from "next/navigation";
 
 type DashboardData = {
   latestAssessment: Assessment | null;
@@ -94,6 +96,8 @@ const CALC_TYPE_LABELS: Record<string, string> = {
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const upgradeToastShown = useRef(false);
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [aiReflection, setAiReflection] = useState<string | null>(null);
@@ -122,6 +126,19 @@ export default function DashboardPage() {
       if (intention.success && intention.today) setIntentionToday(intention.today);
     }).finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (upgradeToastShown.current) return;
+    if (searchParams.get("upgraded") !== "true") return;
+
+    if (searchParams.get("source") === "wallet") {
+      toast.success("Upgrade complete. Paid from your wallet balance.");
+    } else {
+      toast.success("Upgrade complete. Your subscription is now active.");
+    }
+
+    upgradeToastShown.current = true;
+  }, [searchParams]);
 
   const requestReflection = async () => {
     if (!data?.latestAssessment) return;

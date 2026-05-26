@@ -22,14 +22,6 @@ export async function POST(req: NextRequest) {
   const session = await requireAuth(req);
   if (session instanceof NextResponse) return session;
 
-  const btcAddress = process.env.BITCOIN_ADDRESS;
-  if (!btcAddress || btcAddress.trim() === "") {
-    return NextResponse.json(
-      { success: false, error: "Bitcoin payments are not yet configured." },
-      { status: 503 }
-    );
-  }
-
   try {
     const body = await req.json();
     const parsed = schema.safeParse(body);
@@ -38,6 +30,75 @@ export async function POST(req: NextRequest) {
     }
 
     const planConfig = BTC_PLANS[parsed.data.plan];
+
+    // Prefer wallet balance for instant activation before creating a new invoice.
+    const wallet = await prisma.bitcoinWallet.upsert({
+      where: { userId: session.userId },
+      create: { userId: session.userId },
+      update: {},
+      select: { balanceCents: true },
+    });
+
+    if (wallet.balanceCents >= planConfig.usdCents) {
+      const now = new Date();
+      const periodEnd = new Date(now);
+      const isAnnual = parsed.data.plan.endsWith("annual");
+      if (isAnnual) periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+      else periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+      await prisma.$transaction(async (tx) => {
+        await tx.bitcoinWallet.update({
+          where: { userId: session.userId },
+          data: { balanceCents: { decrement: planConfig.usdCents } },
+        });
+
+        await tx.subscription.upsert({
+          where: { userId: session.userId },
+          create: {
+            userId: session.userId,
+            tier: planConfig.tier,
+            status: "ACTIVE",
+            currentPeriodStart: now,
+            currentPeriodEnd: periodEnd,
+            cancelAtPeriodEnd: false,
+          },
+          update: {
+            tier: planConfig.tier,
+            status: "ACTIVE",
+            currentPeriodStart: now,
+            currentPeriodEnd: periodEnd,
+            cancelAtPeriodEnd: false,
+          },
+        });
+
+        await tx.payment.create({
+          data: {
+            userId: session.userId,
+            amount: planConfig.usdCents,
+            currency: "btc",
+            status: "SUCCEEDED",
+            description: `Bitcoin wallet upgrade — ${parsed.data.plan}`,
+            metadata: { source: "wallet_upgrade", plan: parsed.data.plan },
+          },
+        });
+      });
+
+      return NextResponse.json({
+        success: true,
+        upgraded: true,
+        source: "wallet",
+        plan: parsed.data.plan,
+      });
+    }
+
+    const btcAddress = process.env.BITCOIN_ADDRESS;
+    if (!btcAddress || btcAddress.trim() === "") {
+      return NextResponse.json(
+        { success: false, error: "Bitcoin payments are not yet configured." },
+        { status: 503 }
+      );
+    }
+
     const btcPrice = await getBtcPriceUsd();
 
     // Cryptographically random invoice ID (no ESM dependency)
@@ -57,7 +118,12 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, invoiceId: invoice.id });
+    return NextResponse.json({
+      success: true,
+      upgraded: false,
+      source: "invoice",
+      invoiceId: invoice.id,
+    });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown error";
     console.error("BTC invoice creation error:", msg);

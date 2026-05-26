@@ -91,7 +91,7 @@ const FAQS: { category: string; items: { q: string; a: string }[] }[] = [
       },
       {
         q: "What data do you store?",
-        a: "We store: your account information (name, email, hashed password), calculator inputs and scores, AI reflection history, journal entries, weekly check-in mood logs, morning intentions, virtue ratings, and goals. We do not store payment card details — all payments are processed by Stripe.",
+        a: "We store: your account information (name, email, hashed password), calculator inputs and scores, AI reflection history, journal entries, weekly check-in mood logs, morning intentions, virtue ratings, and goals. We do not store payment card details. Subscription payments are handled through Bitcoin invoices.",
       },
     ],
   },
@@ -108,7 +108,7 @@ const FAQS: { category: string; items: { q: string; a: string }[] }[] = [
       },
       {
         q: "Can I cancel my subscription?",
-        a: "Yes. Go to Settings → Subscription → Manage Billing & Cancel. Your Premium access continues until the end of the current billing period. There are no cancellation fees.",
+        a: "Yes. Go to Settings → Wallet and disable auto-renew for your plan. Your Premium access continues until the end of the current billing period. There are no cancellation fees.",
       },
       {
         q: "How do I delete my account?",

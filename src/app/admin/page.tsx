@@ -47,6 +47,19 @@ type BtcInvoice = {
   user: { email: string; name: string | null };
 };
 
+type WalletTopUp = {
+  id: string;
+  usdCents: number;
+  satoshis: number;
+  status: "PENDING" | "CONFIRMED" | "REJECTED" | "EXPIRED";
+  btcAddress: string;
+  expiresAt: string;
+  createdAt: string;
+  confirmedAt: string | null;
+  adminNote: string | null;
+  user: { email: string; name: string | null };
+};
+
 type Payment = {
   id: string;
   amount: number;
@@ -116,6 +129,11 @@ export default function AdminPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [pendingTopUps, setPendingTopUps] = useState<WalletTopUp[]>([]);
+  const [recentTopUps, setRecentTopUps] = useState<WalletTopUp[]>([]);
+  const [topUpsLoading, setTopUpsLoading] = useState(false);
+  const [confirmingTopUpId, setConfirmingTopUpId] = useState<string | null>(null);
+  const [rejectingTopUpId, setRejectingTopUpId] = useState<string | null>(null);
 
   // Subscription override
   const [overrideEmail, setOverrideEmail] = useState("");
@@ -159,9 +177,29 @@ export default function AdminPage() {
     setPaymentsLoading(false);
   }, []);
 
+  const fetchTopUps = useCallback(async () => {
+    setTopUpsLoading(true);
+    try {
+      const res = await fetch("/api/admin/wallet/topups");
+      const json = await res.json();
+      if (json.success) {
+        setPendingTopUps(json.pendingTopUps);
+        setRecentTopUps(json.recentTopUps);
+      } else {
+        toast.error(json.error || "Failed to load wallet top-ups.");
+      }
+    } catch {
+      toast.error("Could not reach wallet top-ups API.");
+    }
+    setTopUpsLoading(false);
+  }, []);
+
   useEffect(() => {
-    if (tab === "payments") fetchPayments();
-  }, [tab, fetchPayments]);
+    if (tab === "payments") {
+      fetchPayments();
+      fetchTopUps();
+    }
+  }, [tab, fetchPayments, fetchTopUps]);
 
   const handleConfirm = async (invoiceId: string) => {
     setConfirmingId(invoiceId);
@@ -183,6 +221,49 @@ export default function AdminPage() {
       toast.error("Something went wrong.");
     }
     setConfirmingId(null);
+  };
+
+  const handleConfirmTopUp = async (topUpId: string) => {
+    setConfirmingTopUpId(topUpId);
+    try {
+      const res = await fetch("/api/admin/wallet/confirm-topup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topUpId }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success("Wallet top-up confirmed.");
+        fetchTopUps();
+        fetchPayments();
+      } else {
+        toast.error(json.error || "Top-up confirmation failed.");
+      }
+    } catch {
+      toast.error("Something went wrong.");
+    }
+    setConfirmingTopUpId(null);
+  };
+
+  const handleRejectTopUp = async (topUpId: string) => {
+    setRejectingTopUpId(topUpId);
+    try {
+      const res = await fetch("/api/admin/wallet/reject-topup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topUpId, adminNote: "Rejected from admin dashboard." }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success("Wallet top-up rejected.");
+        fetchTopUps();
+      } else {
+        toast.error(json.error || "Top-up rejection failed.");
+      }
+    } catch {
+      toast.error("Something went wrong.");
+    }
+    setRejectingTopUpId(null);
   };
 
   const handleOverride = async () => {
@@ -388,6 +469,96 @@ export default function AdminPage() {
         {tab === "payments" && (
           <div className="space-y-6">
 
+            {/* Wallet top-up requests */}
+            <Card padding="lg">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Bitcoin className="w-4 h-4 text-amber-500" />
+                    <CardTitle>Wallet Top-Up Requests</CardTitle>
+                  </div>
+                  <button
+                    onClick={fetchTopUps}
+                    className="p-1.5 rounded-lg hover:bg-stone-100 transition-colors text-slate-calm"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${topUpsLoading ? "animate-spin" : ""}`} />
+                  </button>
+                </div>
+                <CardDescription>
+                  Review wallet funding requests and confirm them once the BTC payment has been received.
+                </CardDescription>
+              </CardHeader>
+
+              {topUpsLoading && (
+                <div className="flex justify-center py-8">
+                  <div className="w-5 h-5 border-2 border-soft-gold border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+
+              {!topUpsLoading && pendingTopUps.length === 0 && (
+                <div className="text-center py-10 text-slate-calm">
+                  <Clock className="w-8 h-8 mx-auto mb-2 text-stone-300" />
+                  <p className="text-sm">No pending wallet top-ups.</p>
+                  <p className="text-xs mt-1 text-stone-400">Users create these from Settings → Wallet.</p>
+                </div>
+              )}
+
+              {!topUpsLoading && pendingTopUps.length > 0 && (
+                <div className="space-y-2 mt-2">
+                  {pendingTopUps.map((topUp) => (
+                    <div
+                      key={topUp.id}
+                      className="flex flex-col gap-3 rounded-2xl border border-stone-100 bg-amber-50/40 p-4 lg:flex-row lg:items-center"
+                    >
+                      <div className="min-w-[180px]">
+                        <p className="text-sm font-semibold text-matte-black">{topUp.user.email}</p>
+                        <p className="text-xs text-slate-calm">{topUp.user.name || "Unnamed user"}</p>
+                      </div>
+
+                      <div className="grid flex-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                        <div>
+                          <p className="text-[11px] uppercase tracking-widest text-slate-calm font-semibold">USD Credit</p>
+                          <p className="text-sm font-semibold text-matte-black">{usdDisplay(topUp.usdCents)}</p>
+                        </div>
+                        <div>
+                          <p className="text-[11px] uppercase tracking-widest text-slate-calm font-semibold">BTC Amount</p>
+                          <p className="text-sm font-semibold text-matte-black">{(topUp.satoshis / 1e8).toFixed(6)} BTC</p>
+                        </div>
+                        <div>
+                          <p className="text-[11px] uppercase tracking-widest text-slate-calm font-semibold">Status</p>
+                          <p className="text-sm font-semibold text-matte-black">{topUp.status}</p>
+                        </div>
+                        <div>
+                          <p className="text-[11px] uppercase tracking-widest text-slate-calm font-semibold">Expires</p>
+                          <p className="text-sm font-semibold text-matte-black">{expiresIn(topUp.expiresAt)}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2 lg:w-[240px]">
+                        <Button
+                          variant="gold"
+                          size="sm"
+                          loading={confirmingTopUpId === topUp.id}
+                          onClick={() => handleConfirmTopUp(topUp.id)}
+                          icon={<CheckCircle2 className="w-3.5 h-3.5" />}
+                        >
+                          Confirm top-up
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          loading={rejectingTopUpId === topUp.id}
+                          onClick={() => handleRejectTopUp(topUp.id)}
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+
             {/* Pending Bitcoin invoices */}
             <Card padding="lg">
               <CardHeader>
@@ -476,6 +647,54 @@ export default function AdminPage() {
                       >
                         Activate
                       </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+
+            <Card padding="lg">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Bitcoin className="w-4 h-4 text-amber-500" />
+                    <CardTitle>Recent Wallet Top-Ups</CardTitle>
+                  </div>
+                  <button
+                    onClick={fetchTopUps}
+                    className="p-1.5 rounded-lg hover:bg-stone-100 transition-colors text-slate-calm"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${topUpsLoading ? "animate-spin" : ""}`} />
+                  </button>
+                </div>
+                <CardDescription>Confirmed, rejected, and expired wallet funding requests.</CardDescription>
+              </CardHeader>
+
+              {!topUpsLoading && recentTopUps.length === 0 && (
+                <p className="text-sm text-slate-calm py-4 text-center">No wallet top-up history yet.</p>
+              )}
+
+              {recentTopUps.length > 0 && (
+                <div className="space-y-1 mt-2">
+                  {recentTopUps.map((topUp) => (
+                    <div key={topUp.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-50 transition-colors">
+                      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                        topUp.status === "CONFIRMED"
+                          ? "bg-green-400"
+                          : topUp.status === "PENDING"
+                          ? "bg-amber-400"
+                          : "bg-red-400"
+                      }`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-matte-black truncate">{topUp.user.email}</p>
+                        <p className="text-xs text-slate-calm truncate">{usdDisplay(topUp.usdCents)} · {topUp.status}</p>
+                      </div>
+                      <span className="text-xs text-stone-400 uppercase shrink-0">btc</span>
+                      <span className="text-sm font-semibold text-matte-black shrink-0">{(topUp.satoshis / 1e8).toFixed(6)} BTC</span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${
+                        topUp.status === "CONFIRMED" ? "bg-green-50 text-green-700" : "bg-stone-100 text-slate-calm"
+                      }`}>{topUp.status}</span>
+                      <span className="text-xs text-stone-400 shrink-0 hidden sm:block">{timeAgo(topUp.createdAt)}</span>
                     </div>
                   ))}
                 </div>

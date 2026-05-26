@@ -90,18 +90,53 @@ export default function SimulatePage() {
     setIsDemo(false);
     setLoading(true);
     try {
+      const scenarioLabel = SCENARIOS.find((s) => s.type === selectedScenario)?.label ?? selectedScenario;
       const res = await fetch("/api/simulate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           scenarioType: selectedScenario,
+          title: scenarioLabel,
           baselineScore,
           parameters: { intensity, consistency },
+          includeAiAnalysis: true,
         }),
       });
       const json = await res.json();
       if (json.success) {
-        setResult(json.result);
+        const apiResults = json.results;
+        const apiProjections: Array<{ month: number; peaceScore: number }> = json.projections;
+
+        // Map to chart format: "Now" seed + 12 monthly points
+        const chartProjections = [
+          { month: "Now", baseline: baselineScore, scenario: baselineScore },
+          ...apiProjections.map((p, i) => ({
+            month: `M${p.month}`,
+            baseline: Math.max(0, Math.round((baselineScore - (i + 1) * 0.5) * 10) / 10),
+            scenario: Math.round(p.peaceScore * 10) / 10,
+          })),
+        ];
+
+        const goalIndex = chartProjections.findIndex((p, i) => i > 0 && p.scenario >= 75);
+
+        const insights: string[] = [
+          `Your sustainability index is projected to improve by ${(apiResults.projectedScore - baselineScore).toFixed(1)} points over 12 months.`,
+          apiResults.stressChange < 0
+            ? `This scenario reduces estimated stress load by ${Math.abs(apiResults.stressChange).toFixed(1)} points.`
+            : `Stress load increases by ${apiResults.stressChange.toFixed(1)} points — monitor energy levels closely.`,
+          apiResults.financialChange !== 0
+            ? `Financial pressure changes by ${apiResults.financialChange > 0 ? "+" : ""}${apiResults.financialChange.toFixed(1)}% — factor this into your commitment.`
+            : "This scenario has a neutral financial impact.",
+          `Recovery capacity improves by ${apiResults.recoveryCapacity.toFixed(1)} points, building long-term resilience.`,
+        ];
+
+        setResult({
+          projections: chartProjections,
+          netImpact: apiResults.projectedScore - baselineScore,
+          timeToGoal: goalIndex > 0 ? goalIndex : null,
+          insights,
+          aiAnalysis: json.aiAnalysis ?? undefined,
+        });
       } else {
         toast.error(json.error || "Simulation failed.");
       }

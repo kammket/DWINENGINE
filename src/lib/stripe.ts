@@ -54,14 +54,13 @@ export const PLANS = {
 
 export async function createCheckoutSession(
   userId: string,
-  email: string,
+  email: string | null | undefined,
   priceId: string,
   successUrl: string,
   cancelUrl: string
 ): Promise<Stripe.Checkout.Session> {
-  return stripe.checkout.sessions.create({
+  const payload: Stripe.Checkout.SessionCreateParams = {
     mode: "subscription",
-    customer_email: email,
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: successUrl,
     cancel_url: cancelUrl,
@@ -70,7 +69,14 @@ export async function createCheckoutSession(
     payment_method_types: ["card"],
     allow_promotion_codes: true,
     billing_address_collection: "auto",
-  });
+  };
+
+  // Stripe rejects empty/invalid customer_email values.
+  if (email && email.includes("@")) {
+    payload.customer_email = email;
+  }
+
+  return stripe.checkout.sessions.create(payload);
 }
 
 export async function createCustomerPortalSession(

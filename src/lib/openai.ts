@@ -1,11 +1,14 @@
 import OpenAI from "openai";
 
-let _openai: OpenAI | null = null;
-function getOpenAI(): OpenAI {
-  if (!_openai) {
-    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+let _groq: OpenAI | null = null;
+function getGroq(): OpenAI {
+  if (!_groq) {
+    _groq = new OpenAI({
+      apiKey: process.env.GROQ_API_KEY || "",
+      baseURL: "https://api.groq.com/openai/v1",
+    });
   }
-  return _openai;
+  return _groq;
 }
 
 const SYSTEM_PROMPT = `You are Logos — the AI reflection engine of Constavita, a Stoic decision intelligence platform.
@@ -57,23 +60,17 @@ ${context.userQuestion ? `User inquiry: ${context.userQuestion}` : ""}
 ${context.historicalTrend ? `Historical context: ${context.historicalTrend}` : ""}
   `.trim();
 
-  const completion = await getOpenAI().chat.completions.create({
-    model: process.env.OPENAI_MODEL || "gpt-4o",
+  const completion = await getGroq().chat.completions.create({
+    model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
-      {
-        role: "user",
-        content: `Please provide a Stoic-inspired reflection based on these life sustainability metrics:\n\n${contextSummary}`,
-      },
+      { role: "user", content: `Please provide a Stoic-inspired reflection based on these life sustainability metrics:\n\n${contextSummary}` },
     ],
     max_tokens: 600,
     temperature: 0.7,
   });
 
-  return (
-    completion.choices[0]?.message?.content ||
-    "Reflection unavailable. Please try again shortly."
-  );
+  return completion.choices[0]?.message?.content || "Reflection unavailable. Please try again shortly.";
 }
 
 export async function generateScenarioAnalysis(
@@ -96,8 +93,8 @@ Estimated financial pressure change: ${scenario.financialChange > 0 ? "+" : ""}$
 Provide a brief Stoic-inspired analysis of this scenario's sustainability and key considerations.
   `.trim();
 
-  const completion = await getOpenAI().chat.completions.create({
-    model: process.env.OPENAI_MODEL || "gpt-4o",
+  const completion = await getGroq().chat.completions.create({
+    model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
       { role: "user", content: prompt },
@@ -106,10 +103,7 @@ Provide a brief Stoic-inspired analysis of this scenario's sustainability and ke
     temperature: 0.7,
   });
 
-  return (
-    completion.choices[0]?.message?.content ||
-    "Analysis unavailable. Please try again shortly."
-  );
+  return completion.choices[0]?.message?.content || "Analysis unavailable. Please try again shortly.";
 }
 
 export async function generateOnboardingInsight(profile: {
@@ -128,8 +122,8 @@ New user starting their Constavita journey with these initial self-assessments (
 Provide a warm, calming welcome reflection that acknowledges their current state and gently frames the journey ahead.
   `.trim();
 
-  const completion = await getOpenAI().chat.completions.create({
-    model: process.env.OPENAI_MODEL || "gpt-4o",
+  const completion = await getGroq().chat.completions.create({
+    model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
       { role: "user", content: prompt },
@@ -138,8 +132,5 @@ Provide a warm, calming welcome reflection that acknowledges their current state
     temperature: 0.8,
   });
 
-  return (
-    completion.choices[0]?.message?.content ||
-    "Welcome to Constavita. Your journey toward clarity begins here."
-  );
+  return completion.choices[0]?.message?.content || "Welcome to Constavita. Your journey toward clarity begins here.";
 }

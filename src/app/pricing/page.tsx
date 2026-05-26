@@ -86,7 +86,6 @@ export default function PricingPage() {
   const { user } = useAuth();
   const [billing, setBilling] = useState<BillingPeriod>("monthly");
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-  const [loadingBtcPlan, setLoadingBtcPlan] = useState<string | null>(null);
   const [btcPrice, setBtcPrice] = useState<number | null>(null);
 
   // Fetch live BTC price via our server-side proxy (avoids CSP + rate limits)
@@ -105,38 +104,6 @@ export default function PricingPage() {
     return () => clearInterval(id);
   }, []);
 
-  const handlePayWithBitcoin = async (plan: typeof PLANS[0]) => {
-    if (!plan.priceId) return;
-    if (!user) {
-      window.location.href = "/register?plan=" + plan.id + "&pay=btc";
-      return;
-    }
-    const btcPlan =
-      plan.id === "enterprise"
-        ? "enterprise_monthly"
-        : billing === "annual"
-        ? "premium_annual"
-        : "premium_monthly";
-
-    setLoadingBtcPlan(plan.id);
-    try {
-      const res = await fetch("/api/payments/bitcoin/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: btcPlan }),
-      });
-      const json = await res.json();
-      if (json.invoiceId) {
-        window.location.href = `/pay/bitcoin/${json.invoiceId}`;
-      } else {
-        toast.error(json.error || "Bitcoin payments not available yet.");
-      }
-    } catch {
-      toast.error("Something went wrong.");
-    }
-    setLoadingBtcPlan(null);
-  };
-
   const handleSubscribe = async (plan: typeof PLANS[0]) => {
     if (!plan.priceId) {
       // Free plan — sign up or go to dashboard
@@ -152,17 +119,24 @@ export default function PricingPage() {
 
     setLoadingPlan(plan.id);
     try {
-      const priceId = billing === "annual" ? plan.priceId.annual : plan.priceId.monthly;
-      const res = await fetch("/api/payments/create-checkout", {
+      const btcPlan =
+        plan.id === "enterprise"
+          ? "enterprise_monthly"
+          : billing === "annual"
+          ? "premium_annual"
+          : "premium_monthly";
+      const res = await fetch("/api/payments/bitcoin/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId, planId: plan.id }),
+        body: JSON.stringify({ plan: btcPlan }),
       });
       const json = await res.json();
-      if (json.url) {
-        window.location.href = json.url;
+      if (json.upgraded) {
+        window.location.href = "/dashboard?upgraded=true&source=wallet";
+      } else if (json.invoiceId) {
+        window.location.href = `/pay/bitcoin/${json.invoiceId}`;
       } else {
-        toast.error(json.error || "Failed to start checkout.");
+        toast.error(json.error || "Bitcoin payments are not available right now.");
       }
     } catch {
       toast.error("Something went wrong.");
@@ -328,26 +302,13 @@ export default function PricingPage() {
                   >
                     {plan.cta}
                   </Button>
-
-                  {/* Bitcoin payment option for paid plans */}
                   {plan.priceId && (
-                    <button
-                      onClick={() => handlePayWithBitcoin(plan)}
-                      disabled={loadingBtcPlan === plan.id}
-                      className="w-full mt-3 flex items-center justify-center gap-2 py-3 rounded-xl bg-amber-50 border border-amber-200 hover:bg-amber-100 hover:border-amber-300 transition-all text-sm font-semibold text-amber-800 disabled:opacity-50 group"
-                    >
-                      {loadingBtcPlan === plan.id ? (
-                        <span className="inline-block w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <Bitcoin className="w-4 h-4 text-amber-600 group-hover:scale-110 transition-transform" />
-                      )}
-                      Pay with Bitcoin
-                      <span className="text-xs font-normal text-amber-600 ml-0.5">
-                        {btcPrice && plan.monthlyPrice
-                          ? `≈ ${((billing === "annual" ? plan.annualPrice : plan.monthlyPrice) / btcPrice).toFixed(6)} BTC`
-                          : "0% fees"}
-                      </span>
-                    </button>
+                    <p className="mt-3 text-center text-xs text-amber-700 font-medium">
+                      Checkout is processed via Bitcoin invoice
+                      {btcPrice && plan.monthlyPrice
+                        ? ` · ≈ ${((billing === "annual" ? plan.annualPrice : plan.monthlyPrice) / btcPrice).toFixed(6)} BTC`
+                        : ""}
+                    </p>
                   )}
                 </div>
               </motion.div>

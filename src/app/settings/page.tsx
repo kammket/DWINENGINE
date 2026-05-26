@@ -1,18 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/layout/Sidebar";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { User, Lock, CreditCard, Trash2, Eye, EyeOff, CheckCircle, ExternalLink, AlertTriangle, Download, Key, Copy, Plus, X } from "lucide-react";
+import { User, Lock, CreditCard, Trash2, Eye, EyeOff, CheckCircle, ExternalLink, AlertTriangle, Download, Key, Copy, Plus, X, Wallet, RefreshCw } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "@/components/providers/AuthProvider";
 import Link from "next/link";
 
-type Tab = "profile" | "security" | "subscription" | "data" | "api";
+type Tab = "profile" | "security" | "subscription" | "wallet" | "data" | "api";
 
 type ApiKeyRecord = { id: string; name: string; prefix: string; lastUsedAt: string | null; createdAt: string };
+type WalletTopUp = { id: string; usdCents: number; status: string; expiresAt: string };
+type WalletTopUpDetails = WalletTopUp & { btcAddress: string; satoshis: number; confirmedAt: string | null; adminNote: string | null };
+type WalletResponse = {
+  success: boolean;
+  wallet: { id: string; balanceCents: number; autoRenewPlan: string | null; autoRenewEnabled: boolean };
+  pendingTopUp: WalletTopUp | null;
+  subscription: { tier: string; status: string; currentPeriodEnd: string | null } | null;
+  planCosts: Record<string, number>;
+};
 
 export default function SettingsPage() {
   const { user, refreshUser, logout } = useAuth();
@@ -43,6 +52,15 @@ export default function SettingsPage() {
   const [creatingKey, setCreatingKey] = useState(false);
   const [revealedKey, setRevealedKey] = useState<string | null>(null);
   const [exportingData, setExportingData] = useState(false);
+  const [walletData, setWalletData] = useState<WalletResponse | null>(null);
+  const [walletLoaded, setWalletLoaded] = useState(false);
+  const [walletLoading, setWalletLoading] = useState(false);
+  const [walletSaving, setWalletSaving] = useState(false);
+  const [creatingTopUp, setCreatingTopUp] = useState(false);
+  const [selectedTopUpAmount, setSelectedTopUpAmount] = useState(5000);
+  const [topUpDetails, setTopUpDetails] = useState<WalletTopUpDetails | null>(null);
+  const [selectedAutoRenewPlan, setSelectedAutoRenewPlan] = useState<string>("premium_monthly");
+  const [selectedAutoRenewEnabled, setSelectedAutoRenewEnabled] = useState(true);
 
   const isPremium = user?.subscription?.tier === "PREMIUM" || user?.subscription?.tier === "ENTERPRISE";
   const isEnterprise = user?.subscription?.tier === "ENTERPRISE";
@@ -55,6 +73,89 @@ export default function SettingsPage() {
       if (json.success) setApiKeys(json.keys);
     } catch { /* silent */ }
     setApiKeysLoaded(true);
+  };
+
+  const loadWallet = async (force = false) => {
+    if (walletLoaded && !force) return;
+    setWalletLoading(true);
+    try {
+      const res = await fetch("/api/wallet");
+      const json: WalletResponse = await res.json();
+      if (json.success) {
+        setWalletData(json);
+        setSelectedAutoRenewPlan(json.wallet.autoRenewPlan || "premium_monthly");
+        setSelectedAutoRenewEnabled(json.wallet.autoRenewEnabled);
+
+        if (json.pendingTopUp) {
+          const detailRes = await fetch(`/api/wallet/topup/${json.pendingTopUp.id}`);
+          const detailJson = await detailRes.json();
+          if (detailJson.success) {
+            setTopUpDetails(detailJson.topUp);
+          } else {
+            setTopUpDetails(null);
+          }
+        } else {
+          setTopUpDetails(null);
+        }
+
+        setWalletLoaded(true);
+      } else {
+        toast.error((json as { error?: string }).error || "Failed to load wallet.");
+      }
+    } catch {
+      toast.error("Failed to load wallet.");
+    }
+    setWalletLoading(false);
+  };
+
+  const handleCreateTopUp = async () => {
+    setCreatingTopUp(true);
+    try {
+      const res = await fetch("/api/wallet/topup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usdCents: selectedTopUpAmount }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success("Top-up request created.");
+        await loadWallet(true);
+        setTab("wallet");
+      } else if (json.topUpId) {
+        toast.error("You already have a pending top-up.");
+        await loadWallet(true);
+        setTab("wallet");
+      } else {
+        toast.error(json.error || "Failed to create top-up.");
+      }
+    } catch {
+      toast.error("Something went wrong.");
+    }
+    setCreatingTopUp(false);
+  };
+
+  const handleSaveWalletSettings = async () => {
+    setWalletSaving(true);
+    try {
+      const res = await fetch("/api/wallet", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          autoRenewPlan: selectedAutoRenewEnabled ? selectedAutoRenewPlan : null,
+          autoRenewEnabled: selectedAutoRenewEnabled,
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.success("Wallet settings saved.");
+        await loadWallet(true);
+      } else {
+        toast.error(json.error || "Could not save wallet settings.");
+      }
+    } catch {
+      toast.error("Something went wrong.");
+    }
+    setWalletSaving(false);
   };
 
   const handleCreateKey = async (e: React.FormEvent) => {
@@ -172,18 +273,8 @@ export default function SettingsPage() {
   };
 
   const handleManageSubscription = async () => {
-    try {
-      const res = await fetch("/api/payments/create-checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ portal: true }),
-      });
-      const json = await res.json();
-      if (json.url) window.location.href = json.url;
-      else toast.error("Could not open billing portal.");
-    } catch {
-      toast.error("Something went wrong.");
-    }
+    setTab("wallet");
+    toast("Billing is managed through wallet funding and auto-renew settings.", { icon: "₿" });
   };
 
   const handleDeleteAccount = async () => {
@@ -211,9 +302,16 @@ export default function SettingsPage() {
     { id: "profile", label: "Profile", icon: <User className="w-4 h-4" /> },
     { id: "security", label: "Security", icon: <Lock className="w-4 h-4" /> },
     { id: "subscription", label: "Subscription", icon: <CreditCard className="w-4 h-4" /> },
+    { id: "wallet", label: "Wallet", icon: <Wallet className="w-4 h-4" /> },
     { id: "data", label: "Data & Privacy", icon: <Trash2 className="w-4 h-4" /> },
     ...(isEnterprise ? [{ id: "api" as Tab, label: "API Keys", icon: <Key className="w-4 h-4" /> }] : []),
   ];
+
+  useEffect(() => {
+    if (tab === "wallet") {
+      void loadWallet();
+    }
+  }, [tab]);
 
   return (
     <DashboardLayout>
@@ -427,9 +525,188 @@ export default function SettingsPage() {
                 </Link>
               ) : (
                 <Button variant="secondary" fullWidth icon={<ExternalLink className="w-4 h-4" />} onClick={handleManageSubscription}>
-                  Manage Billing & Cancel
+                  Manage Billing in Wallet
                 </Button>
               )}
+              <p className="text-xs text-slate-calm mt-4 leading-relaxed">
+                Wallet balance is managed in the Wallet tab and is applied to subscription renewals when auto-renew is enabled.
+              </p>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Wallet Tab */}
+        {tab === "wallet" && (
+          <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
+            <Card padding="lg">
+              <CardHeader>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <CardTitle>Wallet Balance</CardTitle>
+                    <CardDescription>Use your wallet balance to pay for subscription renewals automatically.</CardDescription>
+                  </div>
+                  <Button variant="secondary" size="sm" loading={walletLoading} onClick={() => void loadWallet(true)} icon={<RefreshCw className="w-4 h-4" />}>
+                    Refresh
+                  </Button>
+                </div>
+              </CardHeader>
+
+              <div className="grid gap-3 sm:grid-cols-2 mb-4">
+                <div className="p-4 rounded-2xl border border-stone-200 bg-stone-50">
+                  <p className="text-xs uppercase tracking-widest text-slate-calm font-semibold">Available Balance</p>
+                  <p className="mt-2 text-3xl font-serif font-bold text-matte-black">
+                    ${((walletData?.wallet.balanceCents ?? 0) / 100).toFixed(2)}
+                  </p>
+                  <p className="text-xs text-slate-calm mt-1">
+                    This balance is deducted before a renewal is charged elsewhere.
+                  </p>
+                </div>
+                <div className="p-4 rounded-2xl border border-stone-200 bg-stone-50">
+                  <p className="text-xs uppercase tracking-widest text-slate-calm font-semibold">Auto-Renew</p>
+                  <p className="mt-2 text-sm font-medium text-matte-black">
+                    {walletData?.wallet.autoRenewEnabled ? "Enabled" : "Disabled"}
+                  </p>
+                  <p className="text-xs text-slate-calm mt-1">
+                    Plan: {walletData?.wallet.autoRenewPlan || "No plan selected"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[2000, 5000, 10000, 20000].map((amount) => (
+                    <button
+                      key={amount}
+                      type="button"
+                      onClick={() => setSelectedTopUpAmount(amount)}
+                      className={`rounded-xl border px-3 py-2 text-sm font-medium transition-all ${
+                        selectedTopUpAmount === amount
+                          ? "border-soft-gold bg-amber-50 text-matte-black shadow-gold"
+                          : "border-stone-200 bg-white text-slate-calm hover:border-stone-300 hover:text-matte-black"
+                      }`}
+                    >
+                      ${amount / 100}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 rounded-2xl border border-stone-200 bg-white">
+                  <div>
+                    <p className="font-semibold text-matte-black">Create a top-up request</p>
+                    <p className="text-xs text-slate-calm mt-1">
+                      Generate a BTC payment request for ${selectedTopUpAmount / 100}. The credit will appear here after confirmation.
+                    </p>
+                  </div>
+                  <Button variant="gold" loading={creatingTopUp} onClick={handleCreateTopUp} icon={<Plus className="w-4 h-4" />}>
+                    Top up wallet
+                  </Button>
+                </div>
+
+                {topUpDetails ? (
+                  <div className="p-4 rounded-2xl border border-amber-200 bg-amber-50 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-matte-black">Pending top-up</p>
+                        <p className="text-xs text-slate-calm">Pay the exact BTC amount below to fund your wallet.</p>
+                      </div>
+                      <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">
+                        {topUpDetails.status}
+                      </span>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2 text-sm">
+                      <div>
+                        <p className="text-xs uppercase tracking-widest text-slate-calm font-semibold">BTC Amount</p>
+                        <p className="mt-1 font-medium text-matte-black">{(topUpDetails.satoshis / 100_000_000).toFixed(8)} BTC</p>
+                        <p className="text-xs text-slate-calm mt-0.5">{topUpDetails.satoshis.toLocaleString()} sats</p>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-widest text-slate-calm font-semibold">USD Credit</p>
+                        <p className="mt-1 font-medium text-matte-black">${(topUpDetails.usdCents / 100).toFixed(2)}</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-xs uppercase tracking-widest text-slate-calm font-semibold mb-1">Payment Address</p>
+                      <div className="flex items-start gap-2">
+                        <code className="flex-1 text-xs font-mono bg-white border border-amber-200 rounded-xl px-3 py-2 break-all text-matte-black">
+                          {topUpDetails.btcAddress}
+                        </code>
+                        <button
+                          type="button"
+                          onClick={() => navigator.clipboard.writeText(topUpDetails.btcAddress).then(() => toast.success("Address copied."))}
+                          className="p-2 rounded-xl border border-amber-200 bg-white hover:bg-amber-100 transition-colors"
+                        >
+                          <Copy className="w-4 h-4 text-amber-700" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-slate-calm">
+                      Expires {new Date(topUpDetails.expiresAt).toLocaleString()}.
+                    </p>
+                  </div>
+                ) : walletData?.pendingTopUp ? (
+                  <div className="p-4 rounded-2xl border border-amber-200 bg-amber-50">
+                    <p className="text-sm font-semibold text-matte-black">Pending top-up</p>
+                    <p className="text-xs text-slate-calm mt-1">
+                      ${walletData.pendingTopUp.usdCents / 100} is awaiting BTC payment and confirmation.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-2xl border border-stone-200 bg-stone-50">
+                    <p className="text-sm font-semibold text-matte-black">No active top-up request</p>
+                    <p className="text-xs text-slate-calm mt-1">Create a request above to pre-fund your wallet for future renewals.</p>
+                  </div>
+                )}
+
+                <div className="p-4 rounded-2xl border border-stone-200 bg-white space-y-3">
+                  <div>
+                    <p className="font-semibold text-matte-black">Auto-renew settings</p>
+                    <p className="text-xs text-slate-calm mt-1">Choose which plan your wallet should renew and whether it should do so automatically.</p>
+                  </div>
+
+                  <label className="flex items-center justify-between gap-3 p-3 rounded-xl border border-stone-200 bg-stone-50">
+                    <span className="text-sm font-medium text-matte-black">Enable auto-renew</span>
+                    <input
+                      type="checkbox"
+                      checked={selectedAutoRenewEnabled}
+                      onChange={(e) => setSelectedAutoRenewEnabled(e.target.checked)}
+                      className="h-4 w-4 rounded border-stone-300 text-soft-gold focus:ring-soft-gold"
+                    />
+                  </label>
+
+                  <div>
+                    <label className="block text-sm font-medium text-matte-black mb-1">Renewal plan</label>
+                    <select
+                      value={selectedAutoRenewPlan}
+                      onChange={(e) => setSelectedAutoRenewPlan(e.target.value)}
+                      className="input-field"
+                      disabled={!selectedAutoRenewEnabled}
+                    >
+                      <option value="premium_monthly">Premium Monthly - ${(walletData?.planCosts.premium_monthly ?? 1900) / 100}</option>
+                      <option value="premium_annual">Premium Annual - ${(walletData?.planCosts.premium_annual ?? 15900) / 100}</option>
+                      <option value="enterprise_monthly">Enterprise Monthly - ${(walletData?.planCosts.enterprise_monthly ?? 9900) / 100}</option>
+                    </select>
+                  </div>
+
+                  <Button variant="primary" loading={walletSaving} onClick={handleSaveWalletSettings} icon={<CheckCircle className="w-4 h-4" />}>
+                    Save Wallet Settings
+                  </Button>
+                </div>
+              </div>
+            </Card>
+
+            <Card padding="lg">
+              <CardHeader>
+                <CardTitle>How wallet funding works</CardTitle>
+                <CardDescription>Wallet credits are a pre-funded balance for future renewals.</CardDescription>
+              </CardHeader>
+              <ul className="space-y-2 text-sm text-slate-calm leading-relaxed list-disc pl-5">
+                <li>Top up the wallet once, then let the balance cover your next renewal.</li>
+                <li>If auto-renew is on, the wallet is used before any new checkout is needed.</li>
+                <li>You can change the renewal plan or disable auto-renew at any time.</li>
+              </ul>
             </Card>
           </motion.div>
         )}
