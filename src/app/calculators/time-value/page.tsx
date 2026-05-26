@@ -329,6 +329,70 @@ export default function TimeValuePage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* SEO: What this calculator measures */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+          <h2 className="font-serif text-lg font-bold text-matte-black mb-3">What the Time Value Calculator Measures</h2>
+          <p className="text-sm text-slate-calm mb-4">The Time Value Calculator measures how well your weekly time allocation aligns with evidence-based wellbeing targets. It scores sleep quality, work intensity, personal growth hours, social connection, and autonomy into a 0–100 Time Sustainability Index.</p>
+          <ul className="grid sm:grid-cols-2 gap-2">
+            {[
+              "Work hours vs waking hours ratio",
+              "Sleep & recovery quality",
+              "Personal growth hours/week",
+              "Social connection hours",
+              "Purposeful activity %",
+              "Leisure hours",
+              "Time autonomy",
+            ].map((f) => (
+              <li key={f} className="flex items-center gap-2 text-sm text-slate-calm">
+                <span className="w-1.5 h-1.5 rounded-full bg-soft-gold shrink-0" />
+                {f}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* SEO: FAQ */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+          <h2 className="font-serif text-lg font-bold text-matte-black mb-4">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {[
+              { q: "What is a time value calculator for personal decisions?", a: "A personal time value calculator measures how effectively you allocate your waking hours across categories that matter most: sleep quality, deep focused work, physical exercise, meaningful relationships, and personal recovery. Unlike a financial time-value-of-money calculator, this tool produces a Time Sustainability Index — a 0–100 score reflecting whether your current time allocation supports long-term wellbeing and productivity." },
+              { q: "How do I calculate the value of my time?", a: "To calculate the value of your time: (1) Audit how you actually spend your hours across a typical week — track sleep, deep work, shallow work, exercise, social time, and leisure. (2) Compare this to evidence-based benchmarks (7–9 hours sleep, 4+ hours deep work, 3+ exercise hours per week). (3) Score each category and combine for an overall time sustainability index. The Constavita Time Value Calculator does this automatically." },
+              { q: "How many hours of deep work should I do per day?", a: "Research by Cal Newport and cognitive scientists suggests 4 hours of genuine deep work per day is near the upper limit for most people. Elite performers average 4–6 hours of focused work, with the rest devoted to planning, administration, and recovery. The Time Value Calculator rewards 3–5 deep work hours per day as optimal." },
+              { q: "What is a good time sustainability score?", a: "A score of 70–100 means your time is well-allocated across the key dimensions — you are sleeping enough, working with focus, exercising regularly, and investing in relationships. 50–69 is average with clear improvement areas. Below 50 suggests your time allocation is misaligned with long-term sustainability and wellbeing." },
+              { q: "Is the time value calculator free?", a: "Yes. The Time Value Calculator is free with no credit card required. Save your results and track progress over time with a free account." },
+            ].map(({ q, a }) => (
+              <details key={q} className="group border-b border-stone-100 last:border-0 pb-4 last:pb-0">
+                <summary className="text-sm font-semibold text-matte-black cursor-pointer list-none flex items-center justify-between gap-2 py-1">
+                  {q}
+                  <span className="text-stone-400 text-lg leading-none group-open:rotate-45 transition-transform">+</span>
+                </summary>
+                <p className="text-sm text-slate-calm leading-relaxed mt-2">{a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        {/* SEO: Related blog posts */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+          <h2 className="font-serif text-lg font-bold text-matte-black mb-3">Further Reading</h2>
+          <div className="space-y-3">
+            {[
+              { href: "/blog/how-to-measure-work-life-balance", title: "How to Actually Measure Work-Life Balance", excerpt: "Most people measure work-life balance wrong — here is the data-driven way to do it." },
+              { href: "/blog/work-life-balance-score-how-to-improve-it", title: "Your Work-Life Balance Score Is Low. Here Is Exactly How to Improve It", excerpt: "Targeted improvements for each dimension of your time allocation score." },
+              { href: "/blog/time-value-of-personal-decisions", title: "The Time Value of Personal Decisions", excerpt: "Why how you spend your time matters more than how you spend your money." },
+            ].map((post) => (
+              <Link key={post.href} href={post.href} className="flex items-start gap-3 group">
+                <span className="w-1.5 h-1.5 rounded-full bg-soft-gold mt-2 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-matte-black group-hover:text-soft-gold transition-colors">{post.title}</p>
+                  <p className="text-xs text-slate-calm mt-0.5">{post.excerpt}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
       </div>
     </DashboardLayout>
   );

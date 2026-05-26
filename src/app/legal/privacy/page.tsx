@@ -1,7 +1,17 @@
 import { PublicHeader, Footer } from "@/components/layout/PublicLayout";
+import type { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Privacy Policy — Constavita",
+  description: "How Constavita collects, stores, and protects your personal data. We never sell your data and you retain full control over your information.",
+  alternates: { canonical: "https://constavita.com/legal/privacy" },
+  robots: { index: true, follow: false },
+  openGraph: {
+    title: "Privacy Policy — Constavita",
+    description: "How Constavita collects, stores, and protects your personal data.",
+    url: "https://constavita.com/legal/privacy",
+    type: "website",
+  },
 };
 
 export default function PrivacyPage() {

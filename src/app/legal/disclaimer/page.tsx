@@ -1,7 +1,17 @@
 import { PublicHeader, Footer } from "@/components/layout/PublicLayout";
+import type { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Legal Disclaimer — Constavita",
+  description: "Constavita calculators produce educational indices only — not financial, medical, legal, or psychological advice. Read our full disclaimer.",
+  alternates: { canonical: "https://constavita.com/legal/disclaimer" },
+  robots: { index: true, follow: false },
+  openGraph: {
+    title: "Legal Disclaimer — Constavita",
+    description: "Constavita provides educational self-reflection tools only. Learn what our indices can and cannot tell you.",
+    url: "https://constavita.com/legal/disclaimer",
+    type: "website",
+  },
 };
 
 export default function DisclaimerPage() {

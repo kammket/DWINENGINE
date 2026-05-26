@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -84,6 +85,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-warm-white text-matte-black antialiased">
+        <GoogleAnalytics />
         <AuthProvider>
           {children}
           <Toaster

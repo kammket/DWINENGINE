@@ -1,7 +1,17 @@
 import { PublicHeader, Footer } from "@/components/layout/PublicLayout";
+import type { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Terms of Service — Constavita",
+  description: "Read the Constavita Terms of Service. Understand your rights, subscription policies, usage rules, and our educational disclaimer before using the platform.",
+  alternates: { canonical: "https://constavita.com/legal/terms" },
+  robots: { index: true, follow: false },
+  openGraph: {
+    title: "Terms of Service — Constavita",
+    description: "Understand your rights and responsibilities when using the Constavita platform.",
+    url: "https://constavita.com/legal/terms",
+    type: "website",
+  },
 };
 
 export default function TermsPage() {

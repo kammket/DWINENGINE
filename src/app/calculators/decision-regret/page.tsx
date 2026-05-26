@@ -306,6 +306,70 @@ export default function DecisionRegretPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* SEO: What this calculator measures */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+          <h2 className="font-serif text-lg font-bold text-matte-black mb-3">What the Decision Regret Calculator Measures</h2>
+          <p className="text-sm text-slate-calm mb-4">The Decision Regret Calculator scores the quality of your decision-making process — not the outcome — across seven critical dimensions. It helps you identify blind spots before you commit, reducing future regret and decision fatigue.</p>
+          <ul className="grid sm:grid-cols-2 gap-2">
+            {[
+              "Decision clarity",
+              "Value alignment",
+              "Risk & reversibility",
+              "Information completeness",
+              "Alternatives considered",
+              "Emotional neutrality",
+              "Regret anticipation",
+            ].map((f) => (
+              <li key={f} className="flex items-center gap-2 text-sm text-slate-calm">
+                <span className="w-1.5 h-1.5 rounded-full bg-soft-gold shrink-0" />
+                {f}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* SEO: FAQ */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+          <h2 className="font-serif text-lg font-bold text-matte-black mb-4">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {[
+              { q: "What is a decision regret calculator?", a: "A decision regret calculator measures the quality of your decision-making process — not the outcome. It scores factors like information completeness, reversibility, values alignment, and emotional clarity. A high score means you made the decision well, even if the result was imperfect. A low score identifies where your process broke down." },
+              { q: "How do I reduce decision regret?", a: "Regret is reduced by improving process, not outcomes. Use the regret minimisation framework: ask yourself 'Will I regret NOT doing this at 80?' Ensure you have gathered sufficient information, considered reversibility, checked alignment with your values, and separated emotion from analysis before deciding." },
+              { q: "What is decision fatigue and how does this calculator help?", a: "Decision fatigue is the deterioration of decision quality after a prolonged session of choices. This calculator helps by giving you a structured framework — reducing the mental load of evaluating any single decision from scratch. By scoring the key dimensions, you can make higher-quality decisions even when cognitively depleted." },
+              { q: "What is a good decision quality score?", a: "A score of 75–100 indicates a high-quality decision process with good information, clear values alignment, and manageable reversibility. 50–74 is solid with room for improvement. Below 50 suggests significant gaps in your decision process that increase regret risk." },
+              { q: "Is the decision regret calculator free?", a: "Yes, it is completely free with no sign-up required to use. Creating a free account lets you save results and track your decision quality over time." },
+            ].map(({ q, a }) => (
+              <details key={q} className="group border-b border-stone-100 last:border-0 pb-4 last:pb-0">
+                <summary className="text-sm font-semibold text-matte-black cursor-pointer list-none flex items-center justify-between gap-2 py-1">
+                  {q}
+                  <span className="text-stone-400 text-lg leading-none group-open:rotate-45 transition-transform">+</span>
+                </summary>
+                <p className="text-sm text-slate-calm leading-relaxed mt-2">{a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        {/* SEO: Related blog posts */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+          <h2 className="font-serif text-lg font-bold text-matte-black mb-3">Further Reading</h2>
+          <div className="space-y-3">
+            {[
+              { href: "/blog/stoic-framework-for-better-decisions", title: "The Stoic Framework for Making Decisions You Won't Regret", excerpt: "How Marcus Aurelius, Epictetus, and Seneca approached the decisions that matter most." },
+              { href: "/blog/what-is-decision-fatigue-and-how-to-measure-it", title: "What Is Decision Fatigue? How to Measure It and Recover Fast", excerpt: "Decision fatigue depletes your cognitive reserves — here is how to measure and reverse it." },
+              { href: "/blog/how-to-overcome-decision-fatigue-permanently", title: "How to Overcome Decision Fatigue Permanently", excerpt: "Structural changes that reduce your daily decision load and restore cognitive bandwidth." },
+            ].map((post) => (
+              <Link key={post.href} href={post.href} className="flex items-start gap-3 group">
+                <span className="w-1.5 h-1.5 rounded-full bg-soft-gold mt-2 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-matte-black group-hover:text-soft-gold transition-colors">{post.title}</p>
+                  <p className="text-xs text-slate-calm mt-0.5">{post.excerpt}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
       </div>
     </DashboardLayout>
   );

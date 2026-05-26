@@ -1,7 +1,17 @@
 import { PublicHeader, Footer } from "@/components/layout/PublicLayout";
+import type { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "GDPR Rights — Constavita",
+  description: "Your GDPR rights as a Constavita user. Request access, correction, deletion, or portability of your personal data. Applies to EEA, UK, and Switzerland residents.",
+  alternates: { canonical: "https://constavita.com/legal/gdpr" },
+  robots: { index: true, follow: false },
+  openGraph: {
+    title: "GDPR Rights — Constavita",
+    description: "Exercise your data rights under GDPR. Access, correct, export, or delete your Constavita data.",
+    url: "https://constavita.com/legal/gdpr",
+    type: "website",
+  },
 };
 
 export default function GdprPage() {

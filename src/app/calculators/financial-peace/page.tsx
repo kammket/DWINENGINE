@@ -382,6 +382,68 @@ export default function FinancialPeacePage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* SEO: What this calculator measures */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+          <h2 className="font-serif text-lg font-bold text-matte-black mb-3">What the Financial Peace Calculator Measures</h2>
+          <p className="text-sm text-slate-calm mb-4">The Financial Peace Calculator scores your financial sustainability across six weighted dimensions. It transforms income ratios, emergency fund coverage, debt load, and savings behavior into a single 0–100 financial wellness index.</p>
+          <ul className="grid sm:grid-cols-2 gap-2">
+            {[
+              "Income-to-expenses ratio",
+              "Emergency fund coverage",
+              "Debt-to-income ratio",
+              "Savings rate",
+              "Financial stress perception",
+              "Investment diversification",
+            ].map((f) => (
+              <li key={f} className="flex items-center gap-2 text-sm text-slate-calm">
+                <span className="w-1.5 h-1.5 rounded-full bg-soft-gold shrink-0" />
+                {f}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* SEO: FAQ */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+          <h2 className="font-serif text-lg font-bold text-matte-black mb-4">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {[
+              { q: "What is a good financial peace score?", a: "A score of 70–100 indicates strong financial sustainability — your income covers expenses with room to save, your emergency fund is healthy, and your debt load is manageable. A score of 40–69 suggests areas to improve. Below 40 signals significant financial stress that warrants immediate attention." },
+              { q: "How is the financial peace score calculated?", a: "The score is a weighted composite of five factors: income-to-expense ratio (30%), emergency fund coverage in months (25%), debt-to-income ratio (20%), savings rate (15%), and self-rated financial stress (10%). Each factor is normalised to 0–100 and combined for your final index." },
+              { q: "How many months of emergency fund should I have?", a: "Most financial planners recommend 3–6 months of essential expenses for employees and 6–12 months for self-employed individuals or those with variable income. The calculator scores you maximally at 6 or more months." },
+              { q: "What debt-to-income ratio is considered healthy?", a: "A debt-to-income ratio below 20% is considered excellent. 20–35% is manageable. Above 43% is the threshold most lenders consider high risk, and the calculator will reflect elevated stress in your score." },
+              { q: "Is the financial peace calculator free?", a: "Yes, the Financial Peace Calculator is completely free with no credit card required. You can run the assessment as many times as you like and save your history with a free account." },
+            ].map(({ q, a }) => (
+              <details key={q} className="group border-b border-stone-100 last:border-0 pb-4 last:pb-0">
+                <summary className="text-sm font-semibold text-matte-black cursor-pointer list-none flex items-center justify-between gap-2 py-1">
+                  {q}
+                  <span className="text-stone-400 text-lg leading-none group-open:rotate-45 transition-transform">+</span>
+                </summary>
+                <p className="text-sm text-slate-calm leading-relaxed mt-2">{a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        {/* SEO: Related blog posts */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+          <h2 className="font-serif text-lg font-bold text-matte-black mb-3">Further Reading</h2>
+          <div className="space-y-3">
+            {[
+              { href: "/blog/financial-peace-score-vs-net-worth", title: "Financial Peace Score: The Metric That Matters More Than Net Worth", excerpt: "Why your financial peace score matters more than your net worth — and how to improve it." },
+              { href: "/blog/how-to-calculate-financial-independence-score", title: "How to Calculate Your Financial Independence Score", excerpt: "Beyond the FI number: how to measure real financial independence using sustainability metrics." },
+            ].map((post) => (
+              <Link key={post.href} href={post.href} className="flex items-start gap-3 group">
+                <span className="w-1.5 h-1.5 rounded-full bg-soft-gold mt-2 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-matte-black group-hover:text-soft-gold transition-colors">{post.title}</p>
+                  <p className="text-xs text-slate-calm mt-0.5">{post.excerpt}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
       </div>
     </DashboardLayout>
   );

@@ -405,6 +405,70 @@ export default function BurnoutRiskPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* SEO: What this calculator measures */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+          <h2 className="font-serif text-lg font-bold text-matte-black mb-3">What the Burnout Risk Calculator Measures</h2>
+          <p className="text-sm text-slate-calm mb-4">The Burnout Risk Calculator measures your resilience across nine evidence-based dimensions tied to occupational burnout research. It converts work hours, recovery quality, sleep, and autonomy into a single Burnout Resilience Index (0–100).</p>
+          <ul className="grid sm:grid-cols-2 gap-2">
+            {[
+              "Weekly work hours vs recovery",
+              "Vacation & disconnection frequency",
+              "Sleep duration & quality",
+              "Exercise frequency",
+              "Perceived stress",
+              "Autonomy & control",
+              "Purpose alignment",
+              "Social support",
+              "Work-life balance perception",
+            ].map((f) => (
+              <li key={f} className="flex items-center gap-2 text-sm text-slate-calm">
+                <span className="w-1.5 h-1.5 rounded-full bg-soft-gold shrink-0" />
+                {f}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* SEO: FAQ */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+          <h2 className="font-serif text-lg font-bold text-matte-black mb-4">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {[
+              { q: "What is a burnout risk calculator?", a: "A burnout risk calculator measures your resilience across nine evidence-based dimensions: workload intensity, recovery quality, sleep adequacy, exercise frequency, perceived stress, autonomy and control, purpose alignment, social support, and work-life boundary strength. Each dimension is scored and weighted to produce a composite Burnout Resilience Index from 0–100. Higher scores mean greater resilience, not greater risk." },
+              { q: "What is a good burnout resilience score?", a: "A score of 75–100 indicates a genuinely sustainable work rhythm with strong recovery habits. 55–74 is functional but shows clear areas to improve before depletion accumulates. Below 55 signals elevated burnout risk — one or more dimensions are structurally unsustainable. Below 40 represents high risk requiring immediate attention to workload, sleep, or autonomy." },
+              { q: "How many hours of work per week causes burnout?", a: "Stanford research shows productivity per hour drops sharply after 50 hours per week and becomes negligible beyond 55 hours. Chronically working 60+ hours per week is a strong burnout predictor, particularly when combined with low autonomy or poor sleep. The burnout calculator weights hours in the context of recovery quality — someone working 55 hours with excellent sleep and autonomy may score significantly better than someone working 45 hours with chronic poor sleep and high perceived stress." },
+              { q: "Can you recover from burnout?", a: "Yes, burnout is recoverable, but recovery follows a logarithmic curve — not a linear one. Initial improvement after reducing workload or improving sleep can be rapid, but full restoration of cognitive and emotional capacity from severe burnout typically takes 6–18 months of sustained low stress. This is why prevention — measured through a regular burnout risk score — is far more effective than recovery as a strategy." },
+              { q: "Is the burnout risk calculator free?", a: "Yes, the Burnout Risk Calculator is completely free with no credit card required. You can run the assessment as many times as needed and save your score history with a free account to track your resilience trend over time." },
+            ].map(({ q, a }) => (
+              <details key={q} className="group border-b border-stone-100 last:border-0 pb-4 last:pb-0">
+                <summary className="text-sm font-semibold text-matte-black cursor-pointer list-none flex items-center justify-between gap-2 py-1">
+                  {q}
+                  <span className="text-stone-400 text-lg leading-none group-open:rotate-45 transition-transform">+</span>
+                </summary>
+                <p className="text-sm text-slate-calm leading-relaxed mt-2">{a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        {/* SEO: Related blog posts */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+          <h2 className="font-serif text-lg font-bold text-matte-black mb-3">Further Reading</h2>
+          <div className="space-y-3">
+            {[
+              { href: "/blog/how-to-calculate-burnout-risk", title: "How to Calculate Your Burnout Risk Before It's Too Late", excerpt: "A quantitative burnout risk score turns a vague sense of dread into a number you can act on." },
+            ].map((post) => (
+              <Link key={post.href} href={post.href} className="flex items-start gap-3 group">
+                <span className="w-1.5 h-1.5 rounded-full bg-soft-gold mt-2 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-matte-black group-hover:text-soft-gold transition-colors">{post.title}</p>
+                  <p className="text-xs text-slate-calm mt-0.5">{post.excerpt}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
       </div>
     </DashboardLayout>
   );

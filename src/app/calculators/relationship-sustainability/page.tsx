@@ -309,6 +309,69 @@ export default function RelationshipSustainabilityPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* SEO: What this calculator measures */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+          <h2 className="font-serif text-lg font-bold text-matte-black mb-3">What the Relationship Sustainability Calculator Measures</h2>
+          <p className="text-sm text-slate-calm mb-4">The Relationship Sustainability Calculator scores the long-term health of your closest relationship across eight evidence-based dimensions. It quantifies communication quality, trust, values alignment, and growth into a 0–100 sustainability index.</p>
+          <ul className="grid sm:grid-cols-2 gap-2">
+            {[
+              "Communication quality",
+              "Shared values",
+              "Emotional intimacy",
+              "Conflict resolution",
+              "Personal growth support",
+              "Quality time investment",
+              "Trust level",
+              "Mutual respect",
+            ].map((f) => (
+              <li key={f} className="flex items-center gap-2 text-sm text-slate-calm">
+                <span className="w-1.5 h-1.5 rounded-full bg-soft-gold shrink-0" />
+                {f}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* SEO: FAQ */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+          <h2 className="font-serif text-lg font-bold text-matte-black mb-4">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {[
+              { q: "What is a relationship sustainability calculator?", a: "A relationship sustainability calculator measures the long-term health of a relationship across multiple evidence-based dimensions: communication quality, shared values alignment, conflict resolution effectiveness, emotional support depth, and growth compatibility. It produces a 0–100 score that reflects overall relationship sustainability, not just current satisfaction." },
+              { q: "Is my relationship healthy? How can I tell?", a: "Signs of a healthy relationship include consistent open communication, the ability to resolve conflict without contempt, feeling emotionally supported, shared direction for the future, and continued personal growth. A score above 70 on the Relationship Sustainability Calculator suggests a healthy, resilient dynamic. Below 50 indicates dimensions that need attention." },
+              { q: "What are the most important factors in relationship sustainability?", a: "Research consistently identifies four pillars: communication (how freely you express needs and feelings), conflict resolution (how disputes are handled), shared values (alignment on life priorities), and emotional support (whether each partner feels seen and supported). This calculator weights all four equally with bonus consideration for growth compatibility." },
+              { q: "Can I use this calculator for friendships, not just romantic relationships?", a: "Yes. The dimensions — communication, values alignment, conflict resolution, emotional support, and growth — apply equally well to close friendships, work partnerships, and family relationships. Interpret the results in the context of the relationship type." },
+              { q: "Is the relationship sustainability calculator free?", a: "Yes, it is completely free. You can take the assessment as many times as needed. A free account lets you save and compare scores over time to track relationship progress." },
+            ].map(({ q, a }) => (
+              <details key={q} className="group border-b border-stone-100 last:border-0 pb-4 last:pb-0">
+                <summary className="text-sm font-semibold text-matte-black cursor-pointer list-none flex items-center justify-between gap-2 py-1">
+                  {q}
+                  <span className="text-stone-400 text-lg leading-none group-open:rotate-45 transition-transform">+</span>
+                </summary>
+                <p className="text-sm text-slate-calm leading-relaxed mt-2">{a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        {/* SEO: Related blog posts */}
+        <section className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100">
+          <h2 className="font-serif text-lg font-bold text-matte-black mb-3">Further Reading</h2>
+          <div className="space-y-3">
+            {[
+              { href: "/blog/relationship-sustainability-score-explained", title: "Relationship Sustainability Score: The 5 Dimensions That Predict Long-Term Health", excerpt: "Quantify relationship health across communication, trust, shared values, and growth alignment." },
+            ].map((post) => (
+              <Link key={post.href} href={post.href} className="flex items-start gap-3 group">
+                <span className="w-1.5 h-1.5 rounded-full bg-soft-gold mt-2 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-matte-black group-hover:text-soft-gold transition-colors">{post.title}</p>
+                  <p className="text-xs text-slate-calm mt-0.5">{post.excerpt}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
       </div>
     </DashboardLayout>
   );
