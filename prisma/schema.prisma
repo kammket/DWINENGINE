@@ -47,6 +47,13 @@ enum BitcoinInvoiceStatus {
   EXPIRED
 }
 
+enum TopUpStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  EXPIRED
+}
+
 enum CalculatorType {
   FINANCIAL_PEACE
   BURNOUT_RISK
@@ -104,6 +111,8 @@ model User {
   trendHistory      TrendHistory[]
   passwordResets    PasswordReset[]
   bitcoinInvoices   BitcoinInvoice[]
+  bitcoinWallet     BitcoinWallet?
+  bitcoinTopUps     BitcoinTopUp[]
   weeklyCheckins     WeeklyCheckin[]
   goals              UserGoal[]
   achievements       Achievement[]
@@ -531,4 +540,49 @@ model ApiKey {
 
   @@index([userId])
   @@map("api_keys")
+}
+
+// ─────────────────────────────────────────────────────
+// BITCOIN WALLET (pre-funded balance for auto-renewal)
+// ─────────────────────────────────────────────────────
+
+model BitcoinWallet {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  balanceCents     Int      @default(0)
+  autoRenewPlan    String?
+  autoRenewEnabled Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topUps BitcoinTopUp[]
+
+  @@map("bitcoin_wallets")
+}
+
+// ─────────────────────────────────────────────────────
+// BITCOIN TOP-UPS (wallet credit requests)
+// ─────────────────────────────────────────────────────
+
+model BitcoinTopUp {
+  id          String      @id
+  userId      String
+  walletId    String
+  usdCents    Int
+  btcAddress  String
+  satoshis    Int
+  status      TopUpStatus @default(PENDING)
+  txid        String?
+  adminNote   String?
+  confirmedAt DateTime?
+  expiresAt   DateTime
+  createdAt   DateTime    @default(now())
+
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet BitcoinWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@map("bitcoin_top_ups")
 }
