@@ -11,7 +11,9 @@ import { SliderField, NumberInput } from "@/components/ui/FormFields";
 import { getScoreLabel } from "@/types";
 import { getReflectionByCategory } from "@/lib/stoic";
 import { GoalSetter } from "@/components/ui/GoalSetter";
-import { Sparkles, ArrowRight, ChevronDown, ChevronUp, Zap, BookOpen } from "lucide-react";
+import { LockedFeaturePanel, SimulatorLockedPanel } from "@/components/ui/LockedFeaturePanel";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { Sparkles, ArrowRight, ChevronDown, ChevronUp, Zap, BookOpen, Crown } from "lucide-react";
 import toast from "react-hot-toast";
 
 type TimeValueInputs = {
@@ -42,6 +44,10 @@ export default function TimeValuePage() {
   const [loadingAi, setLoadingAi] = useState(false);
   const [previousScore, setPreviousScore] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(true);
+  const { user } = useAuth();
+  const userTier = user?.subscription?.tier;
+  const isPremium = userTier === "PREMIUM" || userTier === "ENTERPRISE";
+  const isGuest = !user;
 
   useEffect(() => {
     fetch("/api/calculators?type=TIME_VALUE&limit=1")
@@ -151,15 +157,21 @@ export default function TimeValuePage() {
                     <div className="mb-4">
                       <ScoreLegend currentScore={result.score} />
                     </div>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={requestAiReflection}
-                      loading={loadingAi}
-                      icon={<Sparkles className="w-3.5 h-3.5" />}
-                    >
-                      Get AI Reflection
-                    </Button>
+                    {isPremium ? (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={requestAiReflection}
+                        loading={loadingAi}
+                        icon={<Sparkles className="w-3.5 h-3.5" />}
+                      >
+                        Get AI Reflection
+                      </Button>
+                    ) : (
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-700 font-medium cursor-default">
+                        <Crown className="w-3.5 h-3.5" /> AI Reflection — Premium
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -184,7 +196,7 @@ export default function TimeValuePage() {
                   )}
                 </div>
 
-                {aiReflection && (
+                {aiReflection ? (
                   <div className="mt-6 pt-6 border-t border-stone-100">
                     <div className="flex items-center gap-2 mb-2">
                       <Sparkles className="w-4 h-4 text-soft-gold" />
@@ -193,7 +205,24 @@ export default function TimeValuePage() {
                     <p className="text-sm text-slate-calm italic font-serif leading-relaxed">{aiReflection}</p>
                     <p className="text-xs text-stone-400 mt-3 italic">Educational self-awareness purposes only.</p>
                   </div>
+                ) : (
+                  <LockedFeaturePanel
+                    userTier={userTier}
+                    isGuest={isGuest}
+                    feature="Logos AI Reflection"
+                    description="Get a personalised Stoic-inspired AI coaching insight on your Time Value score — understanding how intentionally you use your most finite resource and where reclamation is possible."
+                    requiredTier="PREMIUM"
+                  >
+                    <div className="mt-4">
+                      <Button variant="primary" size="sm" onClick={requestAiReflection} loading={loadingAi} icon={<Sparkles className="w-3.5 h-3.5" />}>
+                        Get AI Reflection
+                      </Button>
+                    </div>
+                  </LockedFeaturePanel>
                 )}
+
+                {/* Scenario simulator lock */}
+                <SimulatorLockedPanel userTier={userTier} isGuest={isGuest} />
 
                 {/* Goal setter */}
                 <GoalSetter calculatorType="TIME_VALUE" currentScore={result.score} />
