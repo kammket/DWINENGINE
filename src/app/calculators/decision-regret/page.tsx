@@ -278,6 +278,13 @@ export default function DecisionRegretPage() {
                   <CardTitle>Decision Quality Assessment</CardTitle>
                   <CardDescription>Think of a specific decision you are currently facing and rate each factor honestly.</CardDescription>
                 </CardHeader>
+
+                <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 mb-2">
+                  <span className="text-base flex-shrink-0 mt-0.5">🪞</span>
+                  <p className="text-xs text-amber-800/80 leading-relaxed">
+                    <span className="font-semibold">Rate where you actually are, not where you want to be.</span> Optimistic bias is the single most common reason people regret decisions. Honesty here is the antidote.
+                  </p>
+                </div>
                 <div className="space-y-6">
                   <SliderField label="Decision Clarity" value={inputs.decisionClarity} onChange={(v) => setInputs({ ...inputs, decisionClarity: v })} minLabel="Very unclear" maxLabel="Crystal clear" description="How clearly can you articulate the decision and what success looks like? (1–10)" />
                   <SliderField label="Alternatives Considered" value={inputs.alternativesConsidered} onChange={(v) => setInputs({ ...inputs, alternativesConsidered: v })} minLabel="Only one path" maxLabel="Many options explored" description="How thoroughly have you identified and evaluated alternative options? (1–10)" />

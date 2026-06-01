@@ -366,7 +366,11 @@ export default function CheckinPage() {
                             <span className="text-4xl">{MOOD_EMOJI[val]}</span>
                           </div>
 
-                          <p className="text-sm text-slate-calm mb-8 leading-relaxed">{s.description}</p>
+                          <p className="text-sm text-slate-calm mb-6 leading-relaxed">{s.description}</p>
+
+                          <p className="text-[11px] text-amber-700/70 bg-amber-50/60 border border-amber-100/80 rounded-lg px-3 py-2 mb-6 leading-relaxed">
+                            Rate how things <em>actually are</em> this week — not how you'd like them to be. Honest ratings build a useful picture over time.
+                          </p>
 
                           {/* Large value display */}
                           <div className="text-center mb-6">

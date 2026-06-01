@@ -280,6 +280,13 @@ export default function RelationshipSustainabilityPage() {
                   <CardTitle>Relationship Quality Inputs</CardTitle>
                   <CardDescription>Reflect honestly on your primary relationship. All responses are private and used only to compute your index.</CardDescription>
                 </CardHeader>
+
+                <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 mb-2">
+                  <span className="text-base flex-shrink-0 mt-0.5">🪞</span>
+                  <p className="text-xs text-amber-800/80 leading-relaxed">
+                    <span className="font-semibold">This only works if you're honest with yourself.</span> No one sees these answers. Rate how things actually feel — not how you hope they are or how you want them to appear.
+                  </p>
+                </div>
                 <div className="space-y-6">
                   <SliderField label="Communication Quality" value={inputs.communicationQuality} onChange={(v) => setInputs({ ...inputs, communicationQuality: v })} minLabel="Poor" maxLabel="Excellent" description="How openly and effectively do you communicate needs, feelings, and boundaries? (1–10)" />
                   <SliderField label="Conflict Resolution" value={inputs.conflictResolution} onChange={(v) => setInputs({ ...inputs, conflictResolution: v })} minLabel="Destructive" maxLabel="Constructive" description="How well do you navigate and resolve disagreements without lasting damage? (1–10)" />

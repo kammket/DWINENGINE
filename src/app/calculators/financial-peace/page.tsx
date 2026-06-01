@@ -293,6 +293,13 @@ export default function FinancialPeacePage() {
                   <CardDescription>All values are used only to calculate your educational index. Nothing is stored externally.</CardDescription>
                 </CardHeader>
 
+                <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 mb-2">
+                  <span className="text-base flex-shrink-0 mt-0.5">🪞</span>
+                  <p className="text-xs text-amber-800/80 leading-relaxed">
+                    <span className="font-semibold">Honest answers give accurate results.</span> Use your real numbers — not what you aim for. An inflated input produces a flattering but useless score. The only person this serves is you.
+                  </p>
+                </div>
+
                 <div className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-4">
                     <NumberInput

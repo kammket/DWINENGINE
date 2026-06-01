@@ -281,10 +281,21 @@ export default function OnboardingPage() {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.35 }}
             >
-              <div className="text-center mb-10">
+              <div className="text-center mb-8">
                 <span className="text-xs font-semibold text-soft-gold uppercase tracking-widest mb-2 block">Step 2 of 3</span>
                 <h2 className="font-serif text-3xl font-bold text-matte-black mb-2">{STEPS[1].title}</h2>
                 <p className="text-slate-calm">{STEPS[1].subtitle}</p>
+              </div>
+
+              {/* Honesty prompt */}
+              <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-2xl px-5 py-4 mb-6">
+                <span className="text-xl flex-shrink-0 mt-0.5">🪞</span>
+                <div>
+                  <p className="text-sm font-semibold text-amber-900/90 mb-0.5">Your score is only as accurate as your honesty.</p>
+                  <p className="text-xs text-amber-800/70 leading-relaxed">
+                    No one else sees these answers. Rate how life <em>actually</em> feels — not how you wish it felt, or how you think it should feel. A truthful mirror is the only kind that helps.
+                  </p>
+                </div>
               </div>
 
               <div className="bg-white rounded-3xl p-8 shadow-premium space-y-8">

@@ -282,6 +282,13 @@ export default function TimeValuePage() {
                   <CardTitle>Weekly Time Allocation</CardTitle>
                   <CardDescription>Enter your typical weekly hours. The optimizer compares your allocation against evidence-based well-being targets.</CardDescription>
                 </CardHeader>
+
+                <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 mb-2">
+                  <span className="text-base flex-shrink-0 mt-0.5">🪞</span>
+                  <p className="text-xs text-amber-800/80 leading-relaxed">
+                    <span className="font-semibold">Enter how you actually spend your time, not how you'd like to.</span> Most people overestimate productive work and underestimate passive time. Accurate numbers produce useful insights.
+                  </p>
+                </div>
                 <div className="space-y-6">
                   {/* Live time budget display */}
                   <div className="bg-stone-50 rounded-xl p-4 border border-stone-100">
