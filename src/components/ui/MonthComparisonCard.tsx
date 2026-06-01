@@ -5,7 +5,7 @@ import { TrendingUp, TrendingDown, Minus, BarChart2 } from "lucide-react";
 import { getStoicQuoteForContext } from "@/lib/stoic";
 
 type TrendData = {
-  month: string;
+  month: number;
   peaceScore: number;
 };
 
