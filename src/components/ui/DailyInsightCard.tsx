@@ -6,7 +6,7 @@ import { useState } from "react";
 import { getStoicQuoteForContext } from "@/lib/stoic";
 
 type TrendData = {
-  month: string;
+  month: number;
   peaceScore: number;
 };
 
