@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { PublicHeader, Footer } from "@/components/layout/PublicLayout";
+import { PublicHeader, Footer, MobileStickyBar } from "@/components/layout/PublicLayout";
 import { ScoreRing } from "@/components/ui/ScoreVisuals";
 import { DailyReflection } from "@/components/ui/DailyReflection";
 import { getDailyReflection } from "@/lib/stoic";
@@ -99,7 +99,7 @@ const fadeUp = {
 export default function HomeClient({ dailyReflection }: { dailyReflection: ReturnType<typeof getDailyReflection> }) {
 
   return (
-    <div className="min-h-screen bg-warm-white">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--page-bg)' }}>
       <PublicHeader />
 
       {/* ── HERO ─────────────────────────────────── */}
@@ -110,20 +110,35 @@ export default function HomeClient({ dailyReflection }: { dailyReflection: Retur
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
           >
-            <span className="inline-flex items-center gap-2 bg-amber-50 text-soft-gold text-xs font-medium px-4 py-2 rounded-full mb-8 border border-amber-100">
-              Stoic Decision Intelligence
-            </span>
+            <div className="flex items-center justify-center flex-wrap gap-2 mb-8">
+              {[
+                { label: "Peace Score", dot: "#C9A84C" },
+                { label: "Burnout Risk", dot: "#F97316" },
+                { label: "Financial Clarity", dot: "#3B82F6" },
+                { label: "Time Freedom", dot: "#8B5CF6" },
+                { label: "Relationship Health", dot: "#F43F5E" },
+              ].map((chip) => (
+                <span
+                  key={chip.label}
+                  className="inline-flex items-center gap-1.5 bg-white border border-stone-100 text-slate-calm text-xs font-medium px-3 py-1.5 rounded-full shadow-sm"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: chip.dot }} />
+                  {chip.label}
+                </span>
+              ))}
+            </div>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.75, delay: 0.1 }}
-            className="font-serif text-5xl md:text-6xl lg:text-7xl font-bold text-matte-black leading-[1.1] mb-8 tracking-tight"
+            className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-8 tracking-tight"
+            style={{ color: 'var(--page-text)' }}
           >
-            Measure the sustainability
+            Understand your life
             <br />
-            <span className="gradient-text">of your life decisions.</span>
+            <span className="gradient-text">before it understands you.</span>
           </motion.h1>
 
           <motion.p
@@ -132,9 +147,10 @@ export default function HomeClient({ dailyReflection }: { dailyReflection: Retur
             transition={{ duration: 0.75, delay: 0.2 }}
             className="text-xl text-slate-calm max-w-2xl mx-auto mb-12 leading-relaxed font-light"
           >
-            Clarity for the choices that shape your peace, energy, time, and future.
+            Discover your Peace Score — a multi-dimensional index of your energy,
+            finances, time, relationships, and cognitive load.
             <br className="hidden md:block" />
-            Not therapy. Not prediction. A rational mirror.
+            <span className="text-matte-black font-medium">Free. No signup required to start.</span>
           </motion.p>
 
           <motion.div
@@ -145,12 +161,12 @@ export default function HomeClient({ dailyReflection }: { dailyReflection: Retur
           >
             <Link href="/onboarding">
               <Button variant="gold" size="lg" icon={<ArrowRight className="w-5 h-5" />} iconPosition="right">
-                Begin Your Assessment — Free
+                Discover My Peace Score — Free
               </Button>
             </Link>
-            <Link href="/calculators">
+            <Link href="/calculators/burnout-risk">
               <Button variant="secondary" size="lg">
-                Explore the Calculators
+                Quick: Burnout Check
               </Button>
             </Link>
           </motion.div>
@@ -161,7 +177,7 @@ export default function HomeClient({ dailyReflection }: { dailyReflection: Retur
             transition={{ delay: 0.6 }}
             className="text-xs text-stone-400"
           >
-            Free tier available · No credit card required · No diagnosis · Just clarity
+            Takes 3 minutes · No credit card · No diagnosis · No pressure
           </motion.p>
         </div>
 
@@ -176,7 +192,7 @@ export default function HomeClient({ dailyReflection }: { dailyReflection: Retur
             <p className="text-center text-xs font-semibold text-soft-gold uppercase tracking-[0.2em] mb-8">
               Your Peace Intelligence Overview
             </p>
-            <div className="grid grid-cols-3 md:grid-cols-5 gap-8 justify-items-center">
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-4 md:gap-8 justify-items-center">
               {CALCULATORS.map((calc, i) => (
                 <motion.div
                   key={calc.name}
@@ -197,6 +213,79 @@ export default function HomeClient({ dailyReflection }: { dailyReflection: Retur
             </p>
           </div>
         </motion.div>
+      </section>
+
+      {/* ── HOW IT WORKS ─────────────────────────────── */}
+      <section className="py-20 px-6 bg-stone-light">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="text-center mb-14"
+          >
+            <p className="text-xs font-semibold text-soft-gold uppercase tracking-[0.2em] mb-4">Your Journey</p>
+            <h2 className="font-serif text-4xl font-bold text-matte-black mb-4">Clarity in three steps.</h2>
+            <p className="text-slate-calm max-w-xl mx-auto font-light">
+              No complicated setup. No overwhelming onboarding. Three moments of honest self-reflection — that&rsquo;s it.
+            </p>
+          </motion.div>
+
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="grid md:grid-cols-3 gap-8 relative"
+          >
+            {/* Connector line */}
+            <div className="hidden md:block absolute top-8 left-[calc(16.66%+2.5rem)] right-[calc(16.66%+2.5rem)] h-px bg-gradient-to-r from-transparent via-amber-200 to-transparent" />
+
+            {[
+              {
+                step: "01",
+                icon: "🪞",
+                title: "Assess honestly",
+                desc: "Answer 10 reflective questions about your energy, finances, time, stress, and relationships. No right answers — just your truth.",
+                cta: "Begin Free Assessment →",
+                href: "/onboarding",
+              },
+              {
+                step: "02",
+                icon: "📊",
+                title: "See your profile",
+                desc: "Receive your Peace Score — a multi-dimensional index showing where you stand across the key dimensions of life sustainability.",
+                cta: null,
+                href: null,
+              },
+              {
+                step: "03",
+                icon: "📈",
+                title: "Track & improve",
+                desc: "Log daily habits, run deep-dive calculators, simulate life changes, and watch your scores evolve over weeks and months.",
+                cta: null,
+                href: null,
+              },
+            ].map((item) => (
+              <motion.div key={item.step} variants={fadeUp} className="relative">
+                <div className="bg-white rounded-3xl p-7 border border-stone-100 shadow-sm h-full flex flex-col">
+                  <div className="flex items-start justify-between mb-5">
+                    <span className="text-3xl">{item.icon}</span>
+                    <span className="text-xs font-bold text-stone-200 tracking-[0.2em]">{item.step}</span>
+                  </div>
+                  <h3 className="font-semibold text-matte-black text-lg mb-2">{item.title}</h3>
+                  <p className="text-sm text-slate-calm leading-relaxed flex-1">{item.desc}</p>
+                  {item.cta && item.href && (
+                    <Link href={item.href} className="mt-5 inline-flex items-center text-sm font-semibold text-soft-gold hover:text-amber-600 transition-colors">
+                      {item.cta}
+                    </Link>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
       </section>
 
       {/* ── DAILY REFLECTION BANNER ───────────────────── */}
@@ -379,6 +468,84 @@ export default function HomeClient({ dailyReflection }: { dailyReflection: Retur
         </div>
       </section>
 
+      {/* ── SOCIAL PROOF ─────────────────────────────── */}
+      <section className="py-20 px-6">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="text-center mb-14"
+          >
+            <p className="text-xs font-semibold text-soft-gold uppercase tracking-[0.2em] mb-4">What people experience</p>
+            <h2 className="font-serif text-4xl font-bold text-matte-black mb-4">Moments of clarity.</h2>
+            <p className="text-slate-calm max-w-xl mx-auto font-light">
+              Not motivation. Not prescriptions. Just a clearer picture of what&rsquo;s actually happening.
+            </p>
+          </motion.div>
+
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="grid md:grid-cols-3 gap-6 mb-14"
+          >
+            {[
+              {
+                quote: "I realised my burnout score was 78. I had been ignoring the signals for months. Seeing it as a number made it real enough to finally act on.",
+                name: "Freelance designer",
+                detail: "Burnout Risk: 78 → 41 over 6 months",
+              },
+              {
+                quote: "The framing around what is and isn't in my control is something I return to constantly. It's not just a calculator — it's a philosophy made interactive.",
+                name: "Product manager",
+                detail: "Using the platform for 4 months",
+              },
+              {
+                quote: "I ran the financial peace calculator before accepting a pay cut for a role I actually wanted. The clarity it gave me was worth more than any advice I received.",
+                name: "Software engineer",
+                detail: "Used Financial Peace + Life Simulation",
+              },
+            ].map((t, i) => (
+              <motion.div key={i} variants={fadeUp}>
+                <div className="bg-white rounded-3xl p-7 border border-stone-100 shadow-sm h-full flex flex-col justify-between">
+                  <p className="text-sm text-slate-calm leading-relaxed italic mb-6">
+                    &ldquo;{t.quote}&rdquo;
+                  </p>
+                  <div className="border-t border-stone-100 pt-4">
+                    <p className="text-xs font-semibold text-matte-black">{t.name}</p>
+                    <p className="text-xs text-stone-400 mt-0.5">{t.detail}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Stats strip */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="flex flex-wrap justify-center gap-8 sm:gap-16 bg-gradient-to-br from-amber-50/40 to-stone-50 border border-stone-100 rounded-3xl py-9 px-10 shadow-sm"
+          >
+            {[
+              { value: "5", label: "Life calculators" },
+              { value: "100%", label: "Free to start" },
+              { value: "Stoic", label: "Philosophy foundation" },
+              { value: "0", label: "Diagnoses ever given" },
+            ].map((stat) => (
+              <div key={stat.label} className="text-center">
+                <p className="font-serif text-3xl font-bold text-matte-black">{stat.value}</p>
+                <p className="text-xs text-stone-400 mt-1 font-medium">{stat.label}</p>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
       {/* ── DAILY REFLECTION HERO ────────────────────── */}
       <section className="py-16 px-6">
         <div className="max-w-2xl mx-auto">
@@ -417,6 +584,7 @@ export default function HomeClient({ dailyReflection }: { dailyReflection: Retur
       </section>
 
       <Footer />
+      <MobileStickyBar />
     </div>
   );
 }

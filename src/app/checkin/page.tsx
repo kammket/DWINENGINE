@@ -9,6 +9,7 @@ import {
   DollarSign, Brain, Heart, Lightbulb, Clock,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { getStoicQuoteForContext } from "@/lib/stoic";
 import toast from "react-hot-toast";
 
 type WeeklyCheckin = {
@@ -108,6 +109,8 @@ export default function CheckinPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
+  // Stepper state: 0–4 = individual sliders, 5 = note + submit
+  const [step, setStep] = useState(0);
 
   const [form, setForm] = useState({
     financialMood: 5,
@@ -169,6 +172,7 @@ export default function CheckinPage() {
   const streak = data?.streak ?? 0;
   const nextBadge = STREAK_BADGES.find((b) => b.weeks > streak);
   const weeksToNext = nextBadge ? nextBadge.weeks - streak : null;
+  const stoicQuote = getStoicQuoteForContext("checkin");
 
   return (
     <DashboardLayout>
@@ -188,6 +192,23 @@ export default function CheckinPage() {
             </div>
           }
         />
+
+        {/* Stoic grounding quote */}
+        <motion.blockquote
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="rounded-xl border border-amber-100 bg-amber-50/50 px-4 py-3"
+        >
+          <p className="text-[12px] text-amber-900/70 italic leading-relaxed">
+            &ldquo;{stoicQuote.text}&rdquo;
+          </p>
+          {stoicQuote.author && (
+            <p className="text-[11px] text-amber-700/60 font-semibold mt-1 not-italic">
+              — {stoicQuote.author}
+            </p>
+          )}
+        </motion.blockquote>
 
         {/* Streak progress */}
         {nextBadge && (
@@ -236,74 +257,216 @@ export default function CheckinPage() {
           )}
         </AnimatePresence>
 
-        {/* Form */}
+        {/* Form — stepper for new check-ins, flat form for edits */}
         {!loading && (
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="bg-white border border-stone-200 rounded-2xl shadow-premium divide-y divide-stone-50">
-              {SLIDERS.map((s) => {
-                const val = form[s.key];
-                const Icon = s.icon;
-                const pct = ((val - 1) / 9) * 100;
-                return (
-                  <div key={s.key} className="p-5">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Icon className={`w-4 h-4 ${s.color}`} />
-                        <span className="text-sm font-semibold text-matte-black">{s.label}</span>
+          done ? (
+            /* ── Edit mode (already submitted this week) ── */
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="bg-white border border-stone-200 rounded-2xl shadow-premium divide-y divide-stone-50">
+                {SLIDERS.map((s) => {
+                  const val = form[s.key];
+                  const Icon = s.icon;
+                  const pct = ((val - 1) / 9) * 100;
+                  return (
+                    <div key={s.key} className="p-5">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Icon className={`w-4 h-4 ${s.color}`} />
+                          <span className="text-sm font-semibold text-matte-black">{s.label}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">{MOOD_EMOJI[val]}</span>
+                          <span className={`text-sm font-bold tabular-nums ${moodColor(val)}`}>
+                            {val}<span className="text-xs font-normal text-stone-300">/10</span>
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">{MOOD_EMOJI[val]}</span>
-                        <span className={`text-sm font-bold tabular-nums ${moodColor(val)}`}>
-                          {val}<span className="text-xs font-normal text-stone-300">/10</span>
-                        </span>
+                      <p className="text-xs text-stone-400 mb-3">{s.description}</p>
+                      <div className="relative">
+                        <input
+                          type="range" min={1} max={10} step={1} value={val}
+                          onChange={(e) => setForm((f) => ({ ...f, [s.key]: parseInt(e.target.value) }))}
+                          className="w-full h-2.5 rounded-full appearance-none cursor-pointer"
+                          style={{ background: `linear-gradient(to right, ${s.fill} ${pct}%, #E7E5E4 ${pct}%)`, outline: "none" }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-[10px] mt-1.5">
+                        <span className="text-stone-300">😓 Struggling</span>
+                        <span className="text-stone-300">🔥 Excellent</span>
                       </div>
                     </div>
-                    <p className="text-xs text-stone-400 mb-3">{s.description}</p>
-                    {/* Coloured fill slider */}
-                    <div className="relative">
-                      <input
-                        type="range"
-                        min={1}
-                        max={10}
-                        step={1}
-                        value={val}
-                        onChange={(e) => setForm((f) => ({ ...f, [s.key]: parseInt(e.target.value) }))}
-                        className="w-full h-2.5 rounded-full appearance-none cursor-pointer"
-                        style={{
-                          background: `linear-gradient(to right, ${s.fill} ${pct}%, #E7E5E4 ${pct}%)`,
-                          outline: "none",
-                        }}
+                  );
+                })}
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-stone-500 mb-1.5">
+                  Reflection note <span className="font-normal text-stone-400">(optional)</span>
+                </label>
+                <textarea
+                  value={form.note}
+                  onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
+                  placeholder="What's on your mind this week?"
+                  rows={3} maxLength={500}
+                  className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm text-matte-black placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-soft-gold/30 resize-none"
+                />
+                <p className="text-right text-[10px] text-stone-300 mt-1">{form.note.length}/500</p>
+              </div>
+              <Button type="submit" variant="gold" disabled={saving} fullWidth loading={saving} icon={<ChevronRight className="w-4 h-4" />} iconPosition="right">
+                Update This Week
+              </Button>
+            </form>
+          ) : (
+            /* ── Stepper mode for new check-ins ── */
+            <div className="space-y-5">
+              {/* Progress dots */}
+              <div className="flex items-center justify-center gap-2">
+                {SLIDERS.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setStep(i)}
+                    className={`transition-all rounded-full ${
+                      i === step ? "w-6 h-2 bg-soft-gold" : i < step ? "w-2 h-2 bg-amber-300" : "w-2 h-2 bg-stone-200"
+                    }`}
+                  />
+                ))}
+                <button
+                  onClick={() => setStep(5)}
+                  className={`transition-all rounded-full ${step === 5 ? "w-6 h-2 bg-soft-gold" : "w-2 h-2 bg-stone-200"}`}
+                />
+              </div>
+
+              <AnimatePresence mode="wait">
+                {step < 5 ? (
+                  /* ── Individual slider card ── */
+                  <motion.div
+                    key={`slider-${step}`}
+                    initial={{ opacity: 0, x: 40 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -40 }}
+                    transition={{ duration: 0.25 }}
+                    className="bg-white border border-stone-200 rounded-2xl shadow-premium overflow-hidden"
+                  >
+                    {(() => {
+                      const s = SLIDERS[step];
+                      const val = form[s.key];
+                      const Icon = s.icon;
+                      const pct = ((val - 1) / 9) * 100;
+                      return (
+                        <div className="p-7">
+                          <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${s.track}`}>
+                                <Icon className={`w-5 h-5 ${s.color}`} />
+                              </div>
+                              <div>
+                                <p className="font-semibold text-matte-black">{s.label}</p>
+                                <p className="text-xs text-stone-400">{step + 1} of {SLIDERS.length}</p>
+                              </div>
+                            </div>
+                            <span className="text-4xl">{MOOD_EMOJI[val]}</span>
+                          </div>
+
+                          <p className="text-sm text-slate-calm mb-8 leading-relaxed">{s.description}</p>
+
+                          {/* Large value display */}
+                          <div className="text-center mb-6">
+                            <span className={`text-6xl font-bold tabular-nums ${moodColor(val)}`}>{val}</span>
+                            <span className="text-xl text-stone-300 font-light">/10</span>
+                            <p className={`text-sm font-medium mt-1 ${moodColor(val)}`}>{moodLabel(val)}</p>
+                          </div>
+
+                          <input
+                            type="range" min={1} max={10} step={1} value={val}
+                            onChange={(e) => setForm((f) => ({ ...f, [s.key]: parseInt(e.target.value) }))}
+                            className="w-full h-3 rounded-full appearance-none cursor-pointer mb-2"
+                            style={{ background: `linear-gradient(to right, ${s.fill} ${pct}%, #E7E5E4 ${pct}%)`, outline: "none" }}
+                          />
+                          <div className="flex justify-between text-[10px] text-stone-300 mb-8">
+                            <span>😓 Struggling</span>
+                            <span>🔥 Excellent</span>
+                          </div>
+
+                          <div className="flex gap-3">
+                            {step > 0 && (
+                              <Button variant="secondary" fullWidth onClick={() => setStep(step - 1)}>
+                                Back
+                              </Button>
+                            )}
+                            <Button
+                              variant="gold" fullWidth
+                              icon={<ChevronRight className="w-4 h-4" />} iconPosition="right"
+                              onClick={() => setStep(step + 1)}
+                            >
+                              {step === SLIDERS.length - 1 ? "Add a note" : "Next"}
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </motion.div>
+                ) : (
+                  /* ── Final step: note + submit ── */
+                  <motion.div
+                    key="note-step"
+                    initial={{ opacity: 0, x: 40 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -40 }}
+                    transition={{ duration: 0.25 }}
+                    className="bg-white border border-stone-200 rounded-2xl shadow-premium p-7 space-y-5"
+                  >
+                    <div>
+                      <p className="font-semibold text-matte-black mb-1">Almost done.</p>
+                      <p className="text-sm text-stone-400">Optional: add a short reflection before submitting.</p>
+                    </div>
+
+                    {/* Summary of scores */}
+                    <div className="grid grid-cols-5 gap-2">
+                      {SLIDERS.map((s) => {
+                        const val = form[s.key];
+                        return (
+                          <button
+                            key={s.key}
+                            onClick={() => setStep(SLIDERS.indexOf(s))}
+                            className="flex flex-col items-center gap-1 bg-stone-50 hover:bg-amber-50/50 rounded-xl p-2 border border-stone-100 transition-colors"
+                            title={`Edit ${s.label}`}
+                          >
+                            <span className="text-lg">{MOOD_EMOJI[val]}</span>
+                            <span className="text-xs font-bold tabular-nums" style={{ color: s.fill }}>{val}</span>
+                            <span className="text-[9px] text-stone-400 text-center leading-tight">{s.label.split(" ")[0]}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-stone-500 mb-1.5">
+                        Reflection note <span className="font-normal text-stone-400">(optional)</span>
+                      </label>
+                      <textarea
+                        value={form.note}
+                        onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
+                        placeholder="What's on your mind this week? Any decisions you're sitting with?"
+                        rows={3} maxLength={500}
+                        className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm text-matte-black placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-soft-gold/30 resize-none"
                       />
+                      <p className="text-right text-[10px] text-stone-300 mt-1">{form.note.length}/500</p>
                     </div>
-                    <div className="flex justify-between text-[10px] mt-1.5">
-                      <span className="text-stone-300">😓 Struggling</span>
-                      <span className="text-stone-300">🔥 Excellent</span>
+
+                    <div className="flex gap-3">
+                      <Button variant="secondary" onClick={() => setStep(4)}>Back</Button>
+                      <Button
+                        variant="gold" fullWidth loading={saving} disabled={saving}
+                        icon={<ChevronRight className="w-4 h-4" />} iconPosition="right"
+                        onClick={(e) => { e.preventDefault(); handleSubmit(e as unknown as React.FormEvent); }}
+                      >
+                        Submit Check-in
+                      </Button>
                     </div>
-                  </div>
-                );
-              })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-
-            {/* Note */}
-            <div>
-              <label className="block text-xs font-semibold text-stone-500 mb-1.5">
-                Reflection note <span className="font-normal text-stone-400">(optional)</span>
-              </label>
-              <textarea
-                value={form.note}
-                onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
-                placeholder="What's on your mind this week? Any decisions you're sitting with?"
-                rows={3}
-                maxLength={500}
-                className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm text-matte-black placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-soft-gold/30 resize-none"
-              />
-              <p className="text-right text-[10px] text-stone-300 mt-1">{form.note.length}/500</p>
-            </div>
-
-            <Button type="submit" variant="gold" disabled={saving} fullWidth loading={saving} icon={<ChevronRight className="w-4 h-4" />} iconPosition="right">
-              {done ? "Update This Week" : "Submit Check-in"}
-            </Button>
-          </form>
+          )
         )}
 
         {/* History strip */}

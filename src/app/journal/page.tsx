@@ -716,16 +716,47 @@ export default function JournalPage() {
             ))}
           </div>
         ) : entries.length === 0 ? (
-          <div className="text-center py-20">
-            <BookOpen className="w-10 h-10 text-stone-200 mx-auto mb-4" />
-            <h3 className="font-serif text-lg font-bold text-matte-black mb-2">No entries yet</h3>
-            <p className="text-sm text-slate-calm max-w-xs mx-auto mb-6">
-              Logging decisions before you make them is one of the most powerful habits you can build.
-            </p>
-            <Button onClick={() => setShowForm(true)} size="sm" icon={<Plus className="w-4 h-4" />}>
-              Log your first decision
-            </Button>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white border border-stone-200 rounded-3xl shadow-premium overflow-hidden"
+          >
+            {/* Gold accent bar */}
+            <div className="h-1 bg-gradient-to-r from-brand-400 to-soft-gold" />
+            <div className="p-8 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-50 to-brand-50 flex items-center justify-center mx-auto mb-4 border border-amber-100">
+                <BookOpen className="w-7 h-7 text-soft-gold" />
+              </div>
+              <h3 className="font-serif text-lg font-bold text-matte-black mb-2">Your decision log starts here</h3>
+              <p className="text-sm text-slate-calm max-w-xs mx-auto mb-1 leading-relaxed">
+                Write down a decision <em>before</em> you make it. Return later to record what happened.
+              </p>
+              <p className="stoic-quote text-xs max-w-xs mx-auto mb-6">
+                &ldquo;First say to yourself what you would be; and then do what you have to do.&rdquo; — Epictetus
+              </p>
+              {/* Mini how-it-works */}
+              <div className="text-left max-w-xs mx-auto space-y-3 mb-6">
+                {[
+                  { n: "1", text: "Log the decision and your options" },
+                  { n: "2", text: "Mark which option you chose" },
+                  { n: "3", text: "Return to record the outcome" },
+                ].map(({ n, text }) => (
+                  <div key={n} className="flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-amber-50 border border-soft-gold/30 text-soft-gold text-xs font-bold flex items-center justify-center flex-shrink-0">{n}</span>
+                    <p className="text-sm text-slate-calm">{text}</p>
+                  </div>
+                ))}
+              </div>
+              <Button
+                onClick={() => setShowForm(true)}
+                variant="gold"
+                size="sm"
+                icon={<Plus className="w-4 h-4" />}
+              >
+                Log your first decision
+              </Button>
+            </div>
+          </motion.div>
         ) : filteredEntries.length === 0 ? (
           <div className="text-center py-12">
             <Search className="w-8 h-8 text-stone-200 mx-auto mb-3" />

@@ -24,79 +24,62 @@ import {
   Sun,
   Compass,
   Activity,
+  Trophy,
 } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
-const navItems = [
+type NavItem = {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  description: string;
+  premium?: boolean;
+};
+
+type NavGroup = {
+  label: string;
+  items: NavItem[];
+};
+
+const NAV_GROUPS: NavGroup[] = [
   {
-    href: "/dashboard",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    description: "Your peace overview",
+    label: "Overview",
+    items: [
+      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, description: "Your peace overview" },
+      { href: "/journey", label: "Journey", icon: Trophy, description: "Milestones & activity map" },
+    ],
   },
   {
-    href: "/calculators",
-    label: "Calculators",
-    icon: Calculator,
-    description: "Analyze your patterns",
+    label: "Daily",
+    items: [
+      { href: "/intention", label: "Intention", icon: Sun, description: "Daily Stoic ritual" },
+      { href: "/pulse", label: "Daily Pulse", icon: Activity, description: "5-dimension check-in" },
+      { href: "/checkin", label: "Weekly Check-in", icon: Flame, description: "Streak & weekly mood" },
+      { href: "/journal", label: "Journal", icon: NotebookPen, description: "Decision log" },
+    ],
   },
   {
-    href: "/reflections",
-    label: "Reflections",
-    icon: BookOpen,
-    description: "Your saved insights",
+    label: "Analyze",
+    items: [
+      { href: "/calculators", label: "Calculators", icon: Calculator, description: "Deep-dive life scores" },
+      { href: "/simulate", label: "Simulate", icon: Zap, description: "Future scenarios", premium: true },
+      { href: "/analytics", label: "Trends", icon: BarChart3, description: "Your evolution", premium: true },
+    ],
   },
   {
-    href: "/checkin",
-    label: "Check-in",
-    icon: Flame,
-    description: "Weekly streak & pulse",
+    label: "Reflect",
+    items: [
+      { href: "/reflections", label: "Reflections", icon: BookOpen, description: "Your saved insights" },
+      { href: "/virtues", label: "Virtue Compass", icon: Compass, description: "Wisdom · Courage · Justice" },
+    ],
   },
   {
-    href: "/pulse",
-    label: "Daily Pulse",
-    icon: Activity,
-    description: "5-dimension daily check-in",
-  },
-  {
-    href: "/intention",
-    label: "Intention",
-    icon: Sun,
-    description: "Daily Stoic ritual",
-  },
-  {
-    href: "/virtues",
-    label: "Virtue Compass",
-    icon: Compass,
-    description: "Wisdom · Courage · Justice · Temperance",
-  },
-  {
-    href: "/journal",
-    label: "Journal",
-    icon: NotebookPen,
-    description: "Decision log",
-  },
-  {
-    href: "/simulate",
-    label: "Simulate",
-    icon: Zap,
-    description: "Future scenarios",
-    premium: true,
-  },
-  {
-    href: "/analytics",
-    label: "Trends",
-    icon: BarChart3,
-    description: "Your evolution",
-    premium: true,
-  },
-  {
-    href: "/settings",
-    label: "Settings",
-    icon: Settings,
-    description: "Account & preferences",
+    label: "Account",
+    items: [
+      { href: "/settings", label: "Settings", icon: Settings, description: "Account & preferences" },
+    ],
   },
 ];
 
@@ -140,78 +123,94 @@ function NavContent({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        {navItems.map((item) => {
-          const isActive = pathname.startsWith(item.href);
-          const isLocked = item.premium && !isPremium;
+      <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-4">
+        {NAV_GROUPS.map((group) => (
+          <div key={group.label}>
+            {!collapsed && (
+              <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-[0.15em] text-stone-300 select-none">
+                {group.label}
+              </p>
+            )}
+            <div className="space-y-0.5">
+              {group.items.map((item) => {
+                const isActive = pathname.startsWith(item.href);
+                const isLocked = item.premium && !isPremium;
+                return (
+                  <Link
+                    key={item.href}
+                    href={isLocked ? "/pricing" : item.href}
+                    onClick={onClose}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-all duration-200 group relative",
+                      isActive
+                        ? "bg-amber-50 text-soft-gold shadow-sm"
+                        : "text-slate-calm hover:bg-stone-50 hover:text-matte-black"
+                    )}
+                  >
+                    {isActive && (
+                      <span className="absolute left-0 inset-y-2.5 w-[3px] bg-soft-gold rounded-r-full" />
+                    )}
+                    <item.icon
+                      className={cn(
+                        "w-5 h-5 flex-shrink-0 transition-colors",
+                        isActive ? "text-soft-gold" : "text-slate-calm group-hover:text-matte-black"
+                      )}
+                    />
+                    {!collapsed && (
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className={cn("text-sm truncate", isActive ? "font-semibold" : "font-medium")}>
+                            {item.label}
+                          </span>
+                          {isLocked && <Crown className="w-3 h-3 text-soft-gold flex-shrink-0" />}
+                        </div>
+                        <p className="text-xs text-stone-300 truncate">{item.description}</p>
+                      </div>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
 
-          return (
+        {/* Admin link — only visible to ADMIN role */}
+        {user?.role === "ADMIN" && (
+          <div>
+            {!collapsed && (
+              <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-[0.15em] text-stone-300 select-none">
+                Admin
+              </p>
+            )}
             <Link
-              key={item.href}
-              href={isLocked ? "/pricing" : item.href}
+              href="/admin"
               onClick={onClose}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-all duration-200 group relative",
-                isActive
+                pathname.startsWith("/admin")
                   ? "bg-amber-50 text-soft-gold shadow-sm"
                   : "text-slate-calm hover:bg-stone-50 hover:text-matte-black"
               )}
             >
-              {/* Active left indicator */}
-              {isActive && (
+              {pathname.startsWith("/admin") && (
                 <span className="absolute left-0 inset-y-2.5 w-[3px] bg-soft-gold rounded-r-full" />
               )}
-              <item.icon
+              <ShieldCheck
                 className={cn(
                   "w-5 h-5 flex-shrink-0 transition-colors",
-                  isActive ? "text-soft-gold" : "text-slate-calm group-hover:text-matte-black"
+                  pathname.startsWith("/admin") ? "text-soft-gold" : "text-slate-calm group-hover:text-matte-black"
                 )}
               />
               {!collapsed && (
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className={cn("text-sm truncate", isActive ? "font-semibold" : "font-medium")}>{item.label}</span>
-                    {isLocked && (
-                      <Crown className="w-3 h-3 text-soft-gold flex-shrink-0" />
-                    )}
-                  </div>
-                  <p className="text-xs text-slate-calm truncate">{item.description}</p>
+                  <span className={cn("text-sm", pathname.startsWith("/admin") ? "font-semibold" : "font-medium")}>
+                    Admin
+                  </span>
+                  <p className="text-xs text-stone-300">Payments & platform</p>
                 </div>
               )}
             </Link>
-          );
-        })}
-
-        {/* Admin link — only visible to ADMIN role */}
-        {user?.role === "ADMIN" && (
-          <Link
-            href="/admin"
-            onClick={onClose}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-all duration-200 group relative mt-1",
-              pathname.startsWith("/admin")
-                ? "bg-amber-50 text-soft-gold shadow-sm"
-                : "text-slate-calm hover:bg-stone-50 hover:text-matte-black"
-            )}
-          >
-            {pathname.startsWith("/admin") && (
-              <span className="absolute left-0 inset-y-2.5 w-[3px] bg-soft-gold rounded-r-full" />
-            )}
-            <ShieldCheck
-              className={cn(
-                "w-5 h-5 flex-shrink-0 transition-colors",
-                pathname.startsWith("/admin") ? "text-soft-gold" : "text-slate-calm group-hover:text-matte-black"
-              )}
-            />
-            {!collapsed && (
-              <div className="flex-1 min-w-0">
-                <span className={cn("text-sm", pathname.startsWith("/admin") ? "font-semibold" : "font-medium")}>
-                  Admin
-                </span>
-                <p className="text-xs text-slate-calm">Payments & platform</p>
-              </div>
-            )}
-          </Link>
+          </div>
         )}
       </nav>
 
@@ -340,6 +339,8 @@ export function MobileMenuButton() {
   );
 }
 
+import { BackToTop } from "@/components/ui/BackToTop";
+
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-warm-white">
@@ -350,6 +351,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           {children}
         </div>
       </main>
+      <BackToTop />
     </div>
   );
 }

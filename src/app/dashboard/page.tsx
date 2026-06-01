@@ -16,8 +16,8 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import {
-  Calculator, Zap, TrendingUp, Sparkles, ArrowRight, Clock,
-  Brain, DollarSign, Heart, Battery, Flame, Target, Trophy,
+  Calculator, Zap, TrendingUp, TrendingDown, Sparkles, ArrowRight, Clock,
+  Brain, DollarSign, Heart, Battery, Flame, Target, CheckCircle2,
 } from "lucide-react";
 import type { Assessment, TrendData } from "@/types";
 import { getScoreColor, getScoreLabel } from "@/types";
@@ -26,6 +26,19 @@ import { DailyReflection } from "@/components/ui/DailyReflection";
 import { getDailyReflection } from "@/lib/stoic";
 import { MementoMori } from "@/components/ui/MementoMori";
 import { VirtueCompass } from "@/components/ui/VirtueCompass";
+import { CrossScoreSummary } from "@/components/ui/CrossScoreSummary";
+import { DailyOneThingCard } from "@/components/ui/DailyOneThingCard";
+import { ScoreTrendNarrative } from "@/components/ui/ScoreTrendNarrative";
+import { AchievementGallery } from "@/components/ui/AchievementGallery";
+import { ProfileCompleteMeter } from "@/components/ui/ProfileCompleteMeter";
+import { OutcomeReminderBanner } from "@/components/ui/OutcomeReminderBanner";
+import { DailyPulseWidget } from "@/components/ui/DailyPulseWidget";
+import { WeeklyXPWidget } from "@/components/ui/WeeklyXPWidget";
+import { WeeklyChallengesCard } from "@/components/ui/WeeklyChallengesCard";
+import { DailyInsightCard } from "@/components/ui/DailyInsightCard";
+import { StreakAtRiskBanner } from "@/components/ui/StreakAtRiskBanner";
+import { MonthComparisonCard } from "@/components/ui/MonthComparisonCard";
+import type { ProfileFlags } from "@/components/ui/ProfileCompleteMeter";
 import toast from "react-hot-toast";
 
 type DashboardData = {
@@ -49,22 +62,6 @@ type AchievementRecord = {
   id: string;
   type: string;
   unlockedAt: string;
-};
-
-const ACHIEVEMENT_META: Record<string, { label: string; icon: string; desc: string }> = {
-  FIRST_CALCULATOR: { label: "First Step", icon: "🏛️", desc: "Ran your first calculator" },
-  ALL_CALCULATORS_DONE: { label: "Full Picture", icon: "🗺️", desc: "Completed all 5 calculators" },
-  SCORE_STABLE: { label: "Stable Ground", icon: "⚖️", desc: "Average score reached 50+" },
-  SCORE_THRIVING: { label: "Thriving", icon: "🌿", desc: "Average score reached 70+" },
-  SCORE_FLOURISHING: { label: "Flourishing", icon: "✨", desc: "Average score reached 85+" },
-  STREAK_4_WEEKS: { label: "4-Week Discipline", icon: "🔥", desc: "4 consecutive weekly check-ins" },
-  STREAK_8_WEEKS: { label: "8-Week Resolve", icon: "⚡", desc: "8 consecutive weekly check-ins" },
-  STREAK_12_WEEKS: { label: "12-Week Mastery", icon: "🔱", desc: "12 consecutive weekly check-ins" },
-  IMPROVED_10_POINTS: { label: "10-Point Leap", icon: "📈", desc: "Improved a score by 10+ points" },
-  FIRST_REFLECTION: { label: "Inner Voice", icon: "💭", desc: "Received your first AI reflection" },
-  FIRST_GOAL: { label: "Goal Setter", icon: "🎯", desc: "Set your first calculator goal" },
-  GOAL_REACHED: { label: "Goal Reached", icon: "🏆", desc: "Achieved a score target" },
-  FIRST_SIMULATION: { label: "Scenario Builder", icon: "🔭", desc: "Ran your first simulation" },
 };
 
 const CALC_TYPE_SHORT: Record<string, string> = {
@@ -101,10 +98,16 @@ export default function DashboardPage() {
   const [aiReflection, setAiReflection] = useState<string | null>(null);
   const [loadingReflection, setLoadingReflection] = useState(false);
   const [streak, setStreak] = useState(0);
+  const [hasCheckinThisWeek, setHasCheckinThisWeek] = useState(false);
   const [goals, setGoals] = useState<GoalWithProgress[]>([]);
   const [achievements, setAchievements] = useState<AchievementRecord[]>([]);
   const [virtueRating, setVirtueRating] = useState<{ wisdom: number; courage: number; justice: number; temperance: number } | null>(null);
   const [intentionToday, setIntentionToday] = useState<{ virtue: string; completed: boolean } | null>(null);
+  const [pulseToday, setPulseToday] = useState(false);
+  const [pulseDaysThisWeek, setPulseDaysThisWeek] = useState(0);
+  const [hasCalcThisWeek, setHasCalcThisWeek] = useState(false);
+  const [hasJournalThisWeek, setHasJournalThisWeek] = useState(false);
+  const [hasIntentionThisWeek, setHasIntentionThisWeek] = useState(false);
   const dailyReflection = getDailyReflection();
 
   useEffect(() => {
@@ -115,14 +118,62 @@ export default function DashboardPage() {
       fetch("/api/achievements").then((r) => r.json()),
       fetch("/api/virtues").then((r) => r.json()),
       fetch("/api/intention").then((r) => r.json()),
-    ]).then(([dash, checkin, goalsRes, achRes, virtues, intention]) => {
+      fetch("/api/pulse").then((r) => r.json()),
+      fetch("/api/journal?limit=7").then((r) => r.json()),
+    ]).then(([dash, checkin, goalsRes, achRes, virtues, intention, pulse, journal]) => {
       if (dash.success) setData(dash.data);
-      if (checkin.success) setStreak(checkin.streak);
+      if (checkin.success) {
+        setStreak(checkin.streak);
+        setHasCheckinThisWeek(!!checkin.thisWeek);
+      }
       if (goalsRes.success) setGoals(goalsRes.goals);
       if (achRes.success) setAchievements(achRes.achievements);
       if (virtues.success && virtues.thisWeek) setVirtueRating(virtues.thisWeek);
-      if (intention.success && intention.today) setIntentionToday(intention.today);
+      if (intention.success) {
+        if (intention.today) setIntentionToday(intention.today);
+        // Check if any intention was set this week
+        const monday = new Date();
+        monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+        monday.setHours(0, 0, 0, 0);
+        const thisWeekIntentions = (intention.recent ?? []).filter(
+          (i: { createdAt: string }) => new Date(i.createdAt) >= monday
+        );
+        setHasIntentionThisWeek(thisWeekIntentions.length > 0);
+      }
+      if (pulse.success) {
+        setPulseToday(!!pulse.today);
+        // Count pulse days this week
+        const monday = new Date();
+        monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+        monday.setHours(0, 0, 0, 0);
+        const days = (pulse.history ?? []).filter(
+          (p: { date: string }) => new Date(p.date) >= monday
+        ).length;
+        setPulseDaysThisWeek(days);
+      }
+      if (journal.success) {
+        const monday = new Date();
+        monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+        monday.setHours(0, 0, 0, 0);
+        const thisWeekJournals = (journal.entries ?? []).filter(
+          (j: { createdAt: string }) => new Date(j.createdAt) >= monday
+        );
+        setHasJournalThisWeek(thisWeekJournals.length > 0);
+      }
     }).finally(() => setLoading(false));
+
+    // Separately check if any calculator was run this week
+    const monday = new Date();
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    monday.setHours(0, 0, 0, 0);
+    fetch("/api/calculators?limit=5").then((r) => r.json()).then((json) => {
+      if (json.success) {
+        const thisWeek = (json.results ?? []).some(
+          (c: { createdAt: string }) => new Date(c.createdAt) >= monday
+        );
+        setHasCalcThisWeek(thisWeek);
+      }
+    });
   }, []);
 
   const requestReflection = async () => {
@@ -188,6 +239,35 @@ export default function DashboardPage() {
 
   const assessment = data?.latestAssessment;
 
+  // Compute stalest calculator age in days (among most-recent-per-type)
+  const latestPerType: Record<string, number> = {};
+  for (const c of data?.recentCalculators ?? []) {
+    const t = new Date(c.createdAt).getTime();
+    if (!latestPerType[c.type] || t > latestPerType[c.type]) {
+      latestPerType[c.type] = t;
+    }
+  }
+  const stalestCalcDays =
+    Object.values(latestPerType).length > 0
+      ? Math.max(
+          ...Object.values(latestPerType).map((t) =>
+            Math.floor((Date.now() - t) / 86400000)
+          )
+        )
+      : null;
+
+  // Profile completeness flags
+  const profileFlags: ProfileFlags = {
+    hasOnboarding: !!user?.onboardingDone,
+    hasCalculator: (data?.recentCalculators?.length ?? 0) > 0,
+    hasAllCalculators: new Set(data?.recentCalculators?.map((c) => c.type)).size >= 5,
+    hasCheckin: streak > 0,
+    hasGoal: goals.length > 0,
+    hasJournal: false, // we don't fetch this count here; treat as false by default
+    hasReflection: (data?.reflectionCount ?? 0) > 0,
+    hasSimulation: (data?.recentSimulations?.length ?? 0) > 0,
+  };
+
   return (
     <DashboardLayout>
       <Suspense fallback={null}>
@@ -215,16 +295,201 @@ export default function DashboardPage() {
           </Link>
         </motion.div>
 
+        {/* ── First-run empty state — shown when no assessment exists yet ── */}
+        {!assessment && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-gradient-to-br from-amber-50 to-stone-50 border border-amber-100 rounded-3xl p-7"
+          >
+            <div className="flex items-start gap-4 mb-6">
+              <div className="w-12 h-12 bg-soft-gold/10 rounded-2xl flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-6 h-6 text-soft-gold" />
+              </div>
+              <div>
+                <h2 className="font-serif text-lg font-bold text-matte-black">Welcome — let&apos;s build your profile.</h2>
+                <p className="text-sm text-slate-calm mt-1">
+                  Complete these three steps to unlock your Peace Score and begin tracking your life sustainability.
+                </p>
+              </div>
+            </div>
+            <div className="grid sm:grid-cols-3 gap-3">
+              {[
+                {
+                  step: "01", title: "Run the assessment", desc: "10 questions. 3 minutes. Your full Peace Score.", href: "/onboarding",
+                  icon: <Brain className="w-5 h-5 text-soft-gold" />, cta: "Start now →",
+                },
+                {
+                  step: "02", title: "Try a calculator", desc: "Deep-dive into burnout, finances, time, or relationships.", href: "/calculators",
+                  icon: <Calculator className="w-5 h-5 text-blue-500" />, cta: "Browse calculators →",
+                },
+                {
+                  step: "03", title: "Set a morning intention", desc: "Pick a Stoic virtue to guide your day.", href: "/intention",
+                  icon: <Target className="w-5 h-5 text-emerald-500" />, cta: "Set intention →",
+                },
+              ].map((item) => (
+                <Link key={item.step} href={item.href}>
+                  <div className="bg-white rounded-2xl p-5 border border-stone-100 hover:border-soft-gold/40 hover:shadow-sm transition-all cursor-pointer h-full">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-9 h-9 bg-stone-50 rounded-xl flex items-center justify-center">
+                        {item.icon}
+                      </div>
+                      <span className="text-xs font-bold text-stone-200 tracking-[0.15em]">{item.step}</span>
+                    </div>
+                    <p className="text-sm font-semibold text-matte-black mb-1">{item.title}</p>
+                    <p className="text-xs text-slate-calm mb-3 leading-relaxed">{item.desc}</p>
+                    <span className="text-xs font-semibold text-soft-gold">{item.cta}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Metrics Snapshot Bar ── quick-glance score/streak/trend */}
+        {assessment && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="flex flex-wrap sm:flex-nowrap items-stretch bg-white border border-stone-100 rounded-2xl shadow-sm overflow-hidden divide-y sm:divide-y-0 sm:divide-x divide-stone-100"
+          >
+            {/* Peace Score mini-ring */}
+            <div className="flex items-center gap-3 px-5 py-4 flex-1 min-w-[140px] bg-gradient-to-r from-amber-50/60 to-transparent">
+              <div className="relative w-11 h-11 flex-shrink-0">
+                <svg className="w-11 h-11 -rotate-90" viewBox="0 0 40 40">
+                  <circle cx="20" cy="20" r="16" fill="none" stroke="#F5F0EB" strokeWidth="4" />
+                  <circle
+                    cx="20" cy="20" r="16" fill="none"
+                    stroke={assessment.overallScore >= 70 ? "#16a34a" : assessment.overallScore >= 45 ? "#C9A84C" : "#ef4444"}
+                    strokeWidth="4" strokeLinecap="round"
+                    strokeDasharray={(2 * Math.PI * 16).toFixed(2)}
+                    strokeDashoffset={(2 * Math.PI * 16 * (1 - assessment.overallScore / 100)).toFixed(2)}
+                  />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-matte-black">
+                  {assessment.overallScore}
+                </span>
+              </div>
+              <div>
+                <p className="text-[10px] text-stone-400 leading-none mb-1">Peace Score</p>
+                <p className="text-sm font-bold text-matte-black leading-none">{getScoreLabel(assessment.overallScore)}</p>
+                <p className="text-[10px] text-stone-400 mt-0.5">Life sustainability index</p>
+              </div>
+            </div>
+
+            {/* Streak */}
+            <div className="flex items-center gap-3 px-5 py-4 flex-1 min-w-[120px]">
+              <Flame className={`w-5 h-5 flex-shrink-0 ${streak > 0 ? "text-orange-500" : "text-stone-200"}`} />
+              <div>
+                <p className="text-[10px] text-stone-400 leading-none mb-1">Weekly Streak</p>
+                <p className="text-sm font-bold text-matte-black leading-none">
+                  {streak > 0 ? `${streak} week${streak === 1 ? "" : "s"}` : "None yet"}
+                </p>
+                <p className="text-[10px] text-stone-400 mt-0.5">{streak > 0 ? "Keep it going" : "Check in weekly"}</p>
+              </div>
+            </div>
+
+            {/* Monthly trend — only shown when 2+ data points */}
+            {data?.trendHistory && data.trendHistory.length > 1 && (() => {
+              const t = data.trendHistory;
+              const diff = (t[t.length - 1]?.peaceScore ?? 0) - (t[t.length - 2]?.peaceScore ?? 0);
+              return (
+                <div className="flex items-center gap-3 px-5 py-4 flex-1 min-w-[130px]">
+                  {diff >= 0
+                    ? <TrendingUp className="w-5 h-5 flex-shrink-0 text-emerald-500" />
+                    : <TrendingDown className="w-5 h-5 flex-shrink-0 text-rose-400" />}
+                  <div>
+                    <p className="text-[10px] text-stone-400 leading-none mb-1">vs last month</p>
+                    <p className={`text-sm font-bold leading-none ${diff >= 0 ? "text-emerald-600" : "text-rose-500"}`}>
+                      {diff >= 0 ? "+" : ""}{diff} pts
+                    </p>
+                    <p className="text-[10px] text-stone-400 mt-0.5">{diff >= 0 ? "Improving" : "Needs attention"}</p>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Dynamic CTA */}
+            <Link
+              href={hasCheckinThisWeek ? "/calculators" : "/checkin"}
+              className="flex items-center gap-2 px-5 py-4 text-sm font-semibold text-soft-gold hover:bg-amber-50/60 transition-colors whitespace-nowrap ml-auto"
+            >
+              {hasCheckinThisWeek
+                ? <><Calculator className="w-4 h-4" /><span>Run Calculator</span><ArrowRight className="w-4 h-4" /></>
+                : <><Flame className="w-4 h-4" /><span>Weekly Check-In</span><ArrowRight className="w-4 h-4" /></>
+              }
+            </Link>
+          </motion.div>
+        )}
+
+        {/* Streak at risk — shows Wed–Sat when streak > 0 and no checkin yet */}
+        <StreakAtRiskBanner streak={streak} hasCheckinThisWeek={hasCheckinThisWeek} />
+
+        {/* One Thing Today */}
+        <DailyOneThingCard
+          streak={streak}
+          hasCheckinThisWeek={hasCheckinThisWeek}
+          stalestCalcDays={stalestCalcDays}
+          staleJournalCount={0}
+          hasGoals={goals.length > 0}
+          pulseToday={pulseToday}
+        />
+
+        {/* Outcome reminder — shows only when stale journal entries exist */}
+        <OutcomeReminderBanner />
+
         {/* Today at a Glance */}
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {/* Daily Ritual heading with animated progress ring */}
+          {(() => {
+            const done = [intentionToday !== null, pulseToday, hasCheckinThisWeek].filter(Boolean).length;
+            const total = 3;
+            const radius = 14;
+            const circ = 2 * Math.PI * radius;
+            const ringColor = done === total ? "#C9A84C" : done > 0 ? "#F59E0B" : "#E5E7EB";
+            return (
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h2 className="text-sm font-semibold text-matte-black">Today&apos;s Ritual</h2>
+                  <p className="text-xs text-stone-400">
+                    {done === total
+                      ? "All key habits held — well done."
+                      : `${done} of ${total} key habits complete today`}
+                  </p>
+                </div>
+                <div className="relative w-10 h-10 flex-shrink-0">
+                  <svg className="w-10 h-10 -rotate-90" viewBox="0 0 36 36">
+                    <circle cx="18" cy="18" r={radius} fill="none" stroke="#F5F0EB" strokeWidth="3.5" />
+                    <motion.circle
+                      cx="18" cy="18" r={radius} fill="none"
+                      stroke={ringColor}
+                      strokeWidth="3.5" strokeLinecap="round"
+                      strokeDasharray={circ.toFixed(2)}
+                      initial={{ strokeDashoffset: circ }}
+                      animate={{ strokeDashoffset: circ * (1 - done / total) }}
+                      transition={{ duration: 1, ease: "easeOut", delay: 0.4 }}
+                    />
+                  </svg>
+                  <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-matte-black">
+                    {done}/{total}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {/* Morning Intention */}
             <Link href="/intention">
-              <div className={`group flex flex-col gap-1.5 p-4 rounded-2xl border cursor-pointer transition-all hover:shadow-sm ${
+              <div className={`relative group flex flex-col gap-1.5 p-4 rounded-2xl border cursor-pointer transition-all hover:shadow-sm ${
                 intentionToday
                   ? "bg-green-50 border-green-200"
                   : "bg-stone-50 border-stone-200 hover:border-amber-200 hover:bg-amber-50/50"
               }`}>
+                {!intentionToday && (
+                  <span className="absolute top-2.5 right-2.5 text-[9px] font-bold text-amber-600 bg-amber-50 border border-amber-100 rounded-full px-1.5 py-0.5">+10 XP</span>
+                )}
                 <span className="text-xl">{intentionToday ? "✅" : "🏛️"}</span>
                 <p className="text-xs font-semibold text-matte-black leading-tight">Morning Intention</p>
                 <p className="text-[11px] text-slate-calm">
@@ -233,15 +498,18 @@ export default function DashboardPage() {
               </div>
             </Link>
 
-            {/* Evening Review / intention complete */}
+            {/* Evening Review */}
             <Link href="/intention">
-              <div className={`group flex flex-col gap-1.5 p-4 rounded-2xl border cursor-pointer transition-all hover:shadow-sm ${
+              <div className={`relative group flex flex-col gap-1.5 p-4 rounded-2xl border cursor-pointer transition-all hover:shadow-sm ${
                 intentionToday?.completed
                   ? "bg-green-50 border-green-200"
                   : intentionToday
                   ? "bg-amber-50 border-amber-200"
                   : "bg-stone-50 border-stone-100 opacity-50 pointer-events-none"
               }`}>
+                {intentionToday && !intentionToday.completed && (
+                  <span className="absolute top-2.5 right-2.5 text-[9px] font-bold text-amber-600 bg-amber-50 border border-amber-100 rounded-full px-1.5 py-0.5">+10 XP</span>
+                )}
                 <span className="text-xl">{intentionToday?.completed ? "✅" : "🌙"}</span>
                 <p className="text-xs font-semibold text-matte-black leading-tight">Evening Review</p>
                 <p className="text-[11px] text-slate-calm">
@@ -254,14 +522,17 @@ export default function DashboardPage() {
               </div>
             </Link>
 
-            {/* Weekly Check-in streak */}
+            {/* Weekly Check-in */}
             <Link href="/checkin">
-              <div className={`group flex flex-col gap-1.5 p-4 rounded-2xl border cursor-pointer transition-all hover:shadow-sm ${
-                streak > 0
+              <div className={`relative group flex flex-col gap-1.5 p-4 rounded-2xl border cursor-pointer transition-all hover:shadow-sm ${
+                hasCheckinThisWeek
                   ? "bg-orange-50 border-orange-200"
                   : "bg-stone-50 border-stone-200 hover:border-orange-200 hover:bg-orange-50/50"
               }`}>
-                <Flame className={`w-5 h-5 ${streak > 0 ? "text-orange-500" : "text-stone-300"}`} />
+                {!hasCheckinThisWeek && (
+                  <span className="absolute top-2.5 right-2.5 text-[9px] font-bold text-orange-600 bg-orange-50 border border-orange-100 rounded-full px-1.5 py-0.5">+50 XP</span>
+                )}
+                <Flame className={`w-5 h-5 ${hasCheckinThisWeek ? "text-orange-500" : "text-stone-300"}`} />
                 <p className="text-xs font-semibold text-matte-black leading-tight">
                   {streak > 0 ? `${streak}-week streak` : "No streak yet"}
                 </p>
@@ -269,9 +540,12 @@ export default function DashboardPage() {
               </div>
             </Link>
 
-            {/* Last Calculator */}
+            {/* Calculators */}
             <Link href="/calculators">
-              <div className="group flex flex-col gap-1.5 p-4 rounded-2xl border border-stone-200 bg-stone-50 cursor-pointer hover:border-brand-200 hover:bg-brand-50/30 transition-all hover:shadow-sm">
+              <div className="relative group flex flex-col gap-1.5 p-4 rounded-2xl border border-stone-200 bg-stone-50 cursor-pointer hover:border-brand-200 hover:bg-brand-50/30 transition-all hover:shadow-sm">
+                {!data?.recentCalculators?.[0] && (
+                  <span className="absolute top-2.5 right-2.5 text-[9px] font-bold text-blue-600 bg-blue-50 border border-blue-100 rounded-full px-1.5 py-0.5">+25 XP</span>
+                )}
                 <Calculator className="w-5 h-5 text-slate-calm group-hover:text-soft-gold transition-colors" />
                 <p className="text-xs font-semibold text-matte-black leading-tight">Calculators</p>
                 <p className="text-[11px] text-slate-calm">
@@ -281,11 +555,40 @@ export default function DashboardPage() {
                 </p>
               </div>
             </Link>
+
+            {/* Daily Pulse */}
+            <DailyPulseWidget />
           </div>
         </motion.div>
 
         {/* Daily Reflection */}
         <DailyReflection reflection={dailyReflection} variant="card" />
+
+        {/* Personalized AI-style insight */}
+        {assessment && data && (
+          <DailyInsightCard
+            peaceScore={assessment.peaceScore}
+            burnoutRisk={assessment.burnoutRisk}
+            streak={streak}
+            hasCheckinThisWeek={hasCheckinThisWeek}
+            pulseDaysThisWeek={pulseDaysThisWeek}
+            goals={goals}
+            trendHistory={data.trendHistory}
+          />
+        )}
+
+        {/* Weekly XP + Challenges — side by side */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <WeeklyXPWidget />
+          <WeeklyChallengesCard
+            hasCheckinThisWeek={hasCheckinThisWeek}
+            pulseDaysThisWeek={pulseDaysThisWeek}
+            hasCalcThisWeek={hasCalcThisWeek}
+            hasJournalThisWeek={hasJournalThisWeek}
+            hasIntentionThisWeek={hasIntentionThisWeek || !!intentionToday}
+            streak={streak}
+          />
+        </div>
 
         {/* No assessment yet */}
         {!assessment && (
@@ -501,11 +804,15 @@ export default function DashboardPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                <Card padding="lg">
+                {/* Month vs month comparison */}
+                <MonthComparisonCard trendHistory={data.trendHistory} />
+
+                <Card padding="lg" className="mt-4">
                   <CardHeader>
                     <CardTitle>Your Progress Arc</CardTitle>
                     <CardDescription>Peace Score evolution over time — patterns matter more than any single moment</CardDescription>
                   </CardHeader>
+                  <ScoreTrendNarrative history={data.trendHistory} />
                   <div className="h-48 mt-2">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={data.trendHistory}>
@@ -646,7 +953,7 @@ export default function DashboardPage() {
                             style={{ backgroundColor: getScoreColor(calc.score) }}
                           />
                           <div>
-                            <p className="text-sm font-medium text-matte-black">
+                            <p className="text-sm font-medium" style={{ color: "var(--page-text)" }}>
                               {CALC_TYPE_LABELS[calc.type] || calc.type}
                             </p>
                             <p className="text-xs text-slate-calm">{formatRelativeTime(calc.createdAt)}</p>
@@ -669,6 +976,24 @@ export default function DashboardPage() {
                 </Card>
               </motion.div>
             )}
+
+            {/* Cross-score pattern analysis */}
+            {data?.recentCalculators && data.recentCalculators.length >= 2 && (() => {
+              const scoreMap: Record<string, number> = {};
+              for (const c of data.recentCalculators) {
+                if (!scoreMap[c.type]) scoreMap[c.type] = c.score;
+              }
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.65 }}
+                >
+                  <CrossScoreSummary scores={scoreMap} />
+                </motion.div>
+              );
+            })()}
+
             {/* Goals panel */}
             {goals.length > 0 && (
               <motion.div
@@ -735,44 +1060,19 @@ export default function DashboardPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 }}
               >
-                <Card padding="lg">
-                  <CardHeader>
-                    <CardTitle>Achievements</CardTitle>
-                    <CardDescription>
-                      {achievements.length} unlocked · keep going to earn more
-                    </CardDescription>
-                  </CardHeader>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {achievements.map((a) => {
-                      const meta = ACHIEVEMENT_META[a.type];
-                      if (!meta) return null;
-                      return (
-                        <div
-                          key={a.id}
-                          className="flex items-start gap-3 bg-amber-50/60 border border-amber-100 rounded-xl p-3"
-                          title={new Date(a.unlockedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                        >
-                          <span className="text-xl leading-none">{meta.icon}</span>
-                          <div className="min-w-0">
-                            <p className="text-xs font-bold text-matte-black leading-tight">{meta.label}</p>
-                            <p className="text-[10px] text-stone-400 mt-0.5 leading-tight">{meta.desc}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-stone-100 flex items-center justify-between">
-                    <span className="text-xs text-stone-400">
-                      {Object.keys(ACHIEVEMENT_META).length - achievements.length} more to unlock
-                    </span>
-                    <Link href="/checkin" className="flex items-center gap-1 text-xs text-soft-gold hover:underline font-medium">
-                      <Trophy className="w-3 h-3" />
-                      Weekly check-in
-                    </Link>
-                  </div>
-                </Card>
+                <AchievementGallery achievements={achievements} />
               </motion.div>
             )}
+
+            {/* Profile Completeness */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.72 }}
+            >
+              <ProfileCompleteMeter flags={profileFlags} />
+            </motion.div>
+
             {/* Memento Mori + Virtue Compass — always shown when assessment exists */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}

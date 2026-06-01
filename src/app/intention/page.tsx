@@ -9,6 +9,7 @@ import {
   Shield, BookOpen, Scale, Zap,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { getStoicQuoteForContext } from "@/lib/stoic";
 
 type Intention = {
   id: string;
@@ -165,6 +166,7 @@ export default function IntentionPage() {
   const streak = data?.streak ?? 0;
   const selectedVirtue = VIRTUES.find((v) => v.key === form.virtue)!;
   const quote = PHILOSOPHER_QUOTES[form.virtue];
+  const agencyQuote = getStoicQuoteForContext("intention");
 
   return (
     <DashboardLayout>
@@ -184,6 +186,25 @@ export default function IntentionPage() {
             <span className="text-[10px] text-stone-400 font-medium uppercase tracking-wide">days</span>
           </div>
         </div>
+
+        {/* Daily Stoic grounding quote */}
+        {!today && (
+          <motion.blockquote
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="rounded-xl border border-stone-100 bg-stone-50/60 px-4 py-3"
+          >
+            <p className="text-[12px] text-stone-600 italic leading-relaxed">
+              &ldquo;{agencyQuote.text}&rdquo;
+            </p>
+            {agencyQuote.author && (
+              <p className="text-[11px] text-stone-400 font-semibold mt-1 not-italic">
+                — {agencyQuote.author}
+              </p>
+            )}
+          </motion.blockquote>
+        )}
 
         {/* Morning / Evening toggle */}
         {today && (

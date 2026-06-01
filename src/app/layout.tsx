@@ -84,31 +84,32 @@ export default function RootLayout({
           title="Constavita Blog RSS Feed"
         />
       </head>
-      <body className="bg-warm-white text-matte-black antialiased">
+      <body className="bg-[var(--page-bg)] text-[var(--page-text)] antialiased">
         <GoogleAnalytics />
         <AuthProvider>
-          {children}
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: "#1C1C1E",
-                color: "#FAF9F6",
-                borderRadius: "12px",
-                fontSize: "13px",
-                fontFamily: "Inter, sans-serif",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
-              },
-              success: {
-                iconTheme: { primary: "#C9A84C", secondary: "#FAF9F6" },
-              },
-              error: {
-                iconTheme: { primary: "#EF4444", secondary: "#FAF9F6" },
-              },
-            }}
-          />
-        </AuthProvider>
+            {children}
+            <Toaster
+              position="bottom-center"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: "#1C1C1E",
+                  color: "#FAF9F6",
+                  borderRadius: "12px",
+                  fontSize: "13px",
+                  fontFamily: "Inter, sans-serif",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
+                  marginBottom: "1rem",
+                },
+                success: {
+                  iconTheme: { primary: "#C9A84C", secondary: "#FAF9F6" },
+                },
+                error: {
+                  iconTheme: { primary: "#EF4444", secondary: "#FAF9F6" },
+                },
+              }}
+            />
+          </AuthProvider>
       </body>
     </html>
   );

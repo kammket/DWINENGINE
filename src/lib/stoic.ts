@@ -6,7 +6,7 @@
 export type StoicReflection = {
   text: string;
   author?: string;
-  category: "clarity" | "recovery" | "agency" | "patience" | "limits" | "time" | "money" | "relationships" | "decisions";
+  category: "clarity" | "recovery" | "agency" | "patience" | "limits" | "time" | "money" | "relationships" | "decisions" | "habits" | "progress" | "persistence" | "integrity";
 };
 
 export const STOIC_REFLECTIONS: StoicReflection[] = [
@@ -67,6 +67,42 @@ export const STOIC_REFLECTIONS: StoicReflection[] = [
   { text: "Consider not what is most exciting, but what you can sustain.", category: "decisions" },
   { text: "Regret is backward-looking. Wisdom is forward-looking. Choose which guides you.", category: "decisions" },
   { text: "First say to yourself what you would be; and then do what you have to do.", author: "Epictetus", category: "decisions" },
+
+  // HABITS
+  { text: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", author: "Aristotle", category: "habits" },
+  { text: "The chains of habit are too light to be felt until they are too heavy to be broken.", category: "habits" },
+  { text: "A small daily task, if it be really daily, will beat the labours of a spasmodic Hercules.", author: "Anthony Trollope", category: "habits" },
+  { text: "Routine in an intelligent man is a sign of ambition.", author: "W.H. Auden", category: "habits" },
+  { text: "The secret of your future is hidden in your daily routine.", category: "habits" },
+  { text: "Do not think that what is hard for you to master is humanly impossible; but if a thing is humanly possible, consider it to be within your reach.", author: "Marcus Aurelius", category: "habits" },
+  { text: "Every day, the clock resets. Your wins don't matter. Your failures don't matter. Don't stress on what was, fight for what could be.", category: "habits" },
+
+  // PROGRESS
+  { text: "Progress is not linear — it is layered. Each effort adds a stratum you cannot see.", category: "progress" },
+  { text: "The quality of your commitments determines the quality of your life.", category: "progress" },
+  { text: "Wherever you are, be there fully.", author: "Eckhart Tolle", category: "progress" },
+  { text: "You don't rise to the level of your goals — you fall to the level of your systems.", category: "progress" },
+  { text: "The real measure of progress is not distance from the start, but distance from who you were.", category: "progress" },
+  { text: "Begin at once to live, and count each separate day as a separate life.", author: "Seneca", category: "progress" },
+  { text: "If you find yourself asking 'am I making progress?' — you are already on the path.", category: "progress" },
+
+  // PERSISTENCE
+  { text: "The impediment to action advances action. What stands in the way becomes the way.", author: "Marcus Aurelius", category: "persistence" },
+  { text: "Fall seven times, stand up eight.", category: "persistence" },
+  { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius", category: "persistence" },
+  { text: "Strength does not come from winning. Your struggles develop your strength.", category: "persistence" },
+  { text: "Endure, and preserve yourselves for better things.", author: "Virgil", category: "persistence" },
+  { text: "No man ever steps in the same river twice, for it's not the same river and he's not the same man.", author: "Heraclitus", category: "persistence" },
+  { text: "I am not what happened to me — I am what I choose to become.", category: "persistence" },
+
+  // INTEGRITY
+  { text: "How soon will you begin to live well?", author: "Seneca", category: "integrity" },
+  { text: "The first step is to not lie to yourself about what you actually want.", category: "integrity" },
+  { text: "Waste no more time arguing about what a good man should be. Be one.", author: "Marcus Aurelius", category: "integrity" },
+  { text: "The highest form of human intelligence is the ability to observe yourself without judgment.", author: "J. Krishnamurti", category: "integrity" },
+  { text: "The life you want is built on the decisions you make when no one is watching.", category: "integrity" },
+  { text: "Be careful how you interpret the world — it is like that.", author: "Erich Heller", category: "integrity" },
+  { text: "You cannot escape the responsibility of tomorrow by evading it today.", author: "Abraham Lincoln", category: "integrity" },
 ];
 
 // Returns a daily reflection seeded by the current date (changes once per day, consistent for all users)
@@ -88,4 +124,36 @@ export function getReflectionByCategory(category: StoicReflection["category"]): 
 export function getRandomReflections(n: number): StoicReflection[] {
   const shuffled = [...STOIC_REFLECTIONS].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, n);
+}
+
+// Returns a quote seeded by week number — stable for the whole week, changes Monday
+export function getWeeklyQuote(category?: StoicReflection["category"]): StoicReflection {
+  const now = new Date();
+  const weekOfYear = Math.floor(
+    (now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / (7 * 24 * 3600 * 1000)
+  );
+  const pool = category ? STOIC_REFLECTIONS.filter((r) => r.category === category) : STOIC_REFLECTIONS;
+  return pool[weekOfYear % pool.length];
+}
+
+// Returns a contextual quote for specific product surfaces
+export function getStoicQuoteForContext(
+  context: "xp" | "streak" | "checkin" | "intention" | "journal" | "pulse" | "progress_up" | "progress_down"
+): StoicReflection {
+  const contextMap: Record<string, StoicReflection["category"][]> = {
+    xp: ["progress", "habits"],
+    streak: ["persistence", "habits"],
+    checkin: ["clarity", "integrity"],
+    intention: ["agency", "integrity"],
+    journal: ["decisions", "clarity"],
+    pulse: ["recovery", "clarity"],
+    progress_up: ["progress", "persistence"],
+    progress_down: ["patience", "agency"],
+  };
+  const categories = contextMap[context] ?? ["clarity"];
+  const now = new Date();
+  const seed = now.getDate() + now.getMonth() * 31;
+  // Alternate between the two categories for variety
+  const chosenCat = categories[seed % categories.length];
+  return getReflectionByCategory(chosenCat);
 }

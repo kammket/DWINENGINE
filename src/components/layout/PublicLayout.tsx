@@ -5,7 +5,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/Button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const navLinks = [
   { href: "/calculators", label: "Calculators" },
@@ -20,14 +20,14 @@ export function PublicHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-warm-white/90 backdrop-blur-md border-b border-stone-100">
+    <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b border-stone-100" style={{ backgroundColor: 'var(--header-bg)' }}>
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5">
           <div className="w-8 h-8 bg-gradient-to-br from-soft-gold to-brand-600 rounded-xl flex items-center justify-center">
             <span className="text-white font-bold text-sm">L</span>
           </div>
-          <span className="font-serif font-semibold text-xl text-matte-black">Constavita</span>
+          <span className="font-serif font-semibold text-xl" style={{ color: 'var(--page-text)' }}>Constavita</span>
         </Link>
 
         {/* Desktop nav */}
@@ -62,12 +62,15 @@ export function PublicHeader() {
         </div>
 
         {/* Mobile menu toggle */}
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="md:hidden p-2 rounded-xl hover:bg-stone-100 transition-colors"
-        >
-          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        <div className="md:hidden flex items-center gap-2">
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            className="p-2 rounded-xl hover:bg-stone-100 transition-colors"
+          >
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
@@ -77,7 +80,8 @@ export function PublicHeader() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-warm-white border-t border-stone-100 px-6 py-4 space-y-4"
+            className="md:hidden border-t border-stone-100 px-6 py-4 space-y-4"
+            style={{ backgroundColor: 'var(--page-bg)' }}
           >
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href} className="block text-sm font-medium text-slate-calm hover:text-matte-black" onClick={() => setMobileOpen(false)}>
@@ -104,6 +108,47 @@ export function PublicHeader() {
         )}
       </AnimatePresence>
     </header>
+  );
+}
+
+/**
+ * Sticky bottom CTA bar for mobile (non-authenticated visitors only).
+ * Appears after the user scrolls past 80px so it doesn't compete with the hero.
+ */
+export function MobileStickyBar() {
+  const { user } = useAuth();
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 80);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  if (user) return null;
+
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          initial={{ y: 80, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 80, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+          className="md:hidden fixed bottom-0 left-0 right-0 z-40 px-4 pb-safe pb-4 pt-3 border-t border-stone-100"
+          style={{ backgroundColor: "var(--header-bg)", backdropFilter: "blur(12px)" }}
+        >
+          <Link href="/onboarding" className="block">
+            <Button variant="gold" fullWidth size="md">
+              Begin Your Assessment — Free
+            </Button>
+          </Link>
+          <p className="text-center text-xs text-slate-calm mt-2">
+            No credit card · No diagnosis · Just clarity
+          </p>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 

@@ -12,11 +12,23 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const variantStyles: Record<string, string> = {
-  default: "bg-white border border-stone-100 shadow-premium",
-  glass: "backdrop-blur-sm bg-white/80 border border-white/60 shadow-premium",
-  elevated: "bg-white border border-stone-100 shadow-premium-lg",
-  outlined: "bg-transparent border border-stone-200",
+  default: "border shadow-premium" ,
+  glass: "backdrop-blur-sm border shadow-premium",
+  elevated: "border shadow-premium-lg",
+  outlined: "bg-transparent border",
   dark: "bg-deep-charcoal border border-stone-700 text-warm-white",
+};
+
+// Inline style helpers for CSS-variable-based theming
+const variantInlineStyles: Record<string, React.CSSProperties> = {
+  default: { backgroundColor: "var(--card-bg)", borderColor: "var(--card-border)" },
+  glass: {
+    backgroundColor: "color-mix(in srgb, var(--card-bg) 85%, transparent)",
+    borderColor: "color-mix(in srgb, var(--card-border) 60%, transparent)",
+  },
+  elevated: { backgroundColor: "var(--card-bg)", borderColor: "var(--card-border)" },
+  outlined: { borderColor: "var(--card-border)" },
+  dark: {},
 };
 
 const paddingStyles: Record<string, string> = {
@@ -39,9 +51,14 @@ export function Card({
     "rounded-3xl transition-all duration-300",
     variantStyles[variant],
     paddingStyles[padding],
-    hover && "hover:shadow-premium-lg hover:-translate-y-0.5 cursor-pointer",
+    hover && "hover:shadow-premium-lg hover:-translate-y-0.5 active:scale-[0.98] cursor-pointer",
     className
   );
+
+  const inlineStyle = {
+    ...variantInlineStyles[variant],
+    ...props.style,
+  };
 
   if (animate) {
     return (
@@ -50,9 +67,11 @@ export function Card({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
         className={baseClasses}
+        style={inlineStyle}
         onClick={props.onClick as React.MouseEventHandler<HTMLDivElement>}
         id={props.id}
-        style={props.style}
+        tabIndex={hover ? 0 : undefined}
+        role={hover ? "button" : undefined}
       >
         {children}
       </motion.div>
@@ -60,7 +79,13 @@ export function Card({
   }
 
   return (
-    <div className={baseClasses} {...props}>
+    <div
+      className={baseClasses}
+      style={inlineStyle}
+      tabIndex={hover ? 0 : undefined}
+      role={hover && props.onClick ? "button" : undefined}
+      {...props}
+    >
       {children}
     </div>
   );

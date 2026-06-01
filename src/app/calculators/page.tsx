@@ -9,6 +9,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useEffect, useState } from "react";
 import { ScoreRing } from "@/components/ui/ScoreVisuals";
 import { getScoreColor, getScoreLabel } from "@/types";
+import { CompletionCelebration } from "@/components/ui/CompletionCelebration";
 import {
   ArrowRight, DollarSign, Battery, Heart, Brain, Clock,
   Crown, Zap, Building2, CheckCircle2, Lock, Sparkles,
@@ -77,6 +78,36 @@ const CALCULATORS = [
   },
 ];
 
+/** Minimal inline sparkline — no external charting dependency */
+function Sparkline({ values, color = "#C9A84C" }: { values: number[]; color?: string }) {
+  if (values.length < 2) return null;
+  const W = 52, H = 18;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const pts = values.map((v, i) => {
+    const x = (i / (values.length - 1)) * W;
+    const y = H - ((v - min) / range) * (H - 2) - 1;
+    return `${x},${y}`;
+  }).join(" ");
+  const lastX = W;
+  const lastY = H - ((values[values.length - 1] - min) / range) * (H - 2) - 1;
+  return (
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+      <polyline
+        points={pts}
+        fill="none"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity="0.7"
+      />
+      <circle cx={lastX} cy={lastY} r="2" fill={color} />
+    </svg>
+  );
+}
+
 function TierBadge({ tier }: { tier: "free" | "premium" | "enterprise" }) {
   if (tier === "premium") {
     return (
@@ -101,6 +132,10 @@ function TierBadge({ tier }: { tier: "free" | "premium" | "enterprise" }) {
 
 export default function CalculatorsIndexPage() {
   const [recentScores, setRecentScores] = useState<Record<string, number>>({});
+  const [scoreHistory, setScoreHistory] = useState<Record<string, number[]>>({});
+  const [lastRunDates, setLastRunDates] = useState<Record<string, string>>({});
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [prevCompleted, setPrevCompleted] = useState(0);
   const { user, loading } = useAuth();
 
   const isGuest = !loading && !user;
@@ -115,13 +150,30 @@ export default function CalculatorsIndexPage() {
       .then((json) => {
         if (json.success) {
           const scores: Record<string, number> = {};
+          const history: Record<string, number[]> = {};
+          const dates: Record<string, string> = {};
           for (const result of json.results) {
             if (!scores[result.type]) scores[result.type] = result.score;
+            if (!history[result.type]) history[result.type] = [];
+            if (history[result.type].length < 6) history[result.type].push(result.score);
+            if (!dates[result.type]) dates[result.type] = result.createdAt;
+          }
+          // Reverse so chronological order for sparkline (oldest → newest)
+          for (const type of Object.keys(history)) {
+            history[type] = history[type].reverse();
           }
           setRecentScores(scores);
+          setScoreHistory(history);
+          setLastRunDates(dates);
+          const completed = Object.keys(scores).length;
+          if (prevCompleted < 5 && completed >= 5) setShowCelebration(true);
+          setPrevCompleted(completed);
         }
       });
   }, [user]);
+
+  const completedCount = Object.keys(recentScores).length;
+  const totalCalcs = CALCULATORS.length;
 
   const ctaHref = isGuest ? "/onboarding" : isPremium ? "/pricing" : "/pricing";
   const ctaLabel = isGuest
@@ -134,9 +186,30 @@ export default function CalculatorsIndexPage() {
 
   return (
     <DashboardLayout>
+      <CompletionCelebration
+        show={showCelebration}
+        onDone={() => setShowCelebration(false)}
+      />
       <div className="space-y-8">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="font-serif text-2xl font-bold text-matte-black mb-1">Decision Calculators</h1>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-1">
+            <h1 className="font-serif text-2xl font-bold" style={{ color: "var(--page-text)" }}>Decision Calculators</h1>
+            {user && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-calm">
+                  {completedCount}/{totalCalcs} complete
+                </span>
+                <div className="w-24 h-2 rounded-full overflow-hidden" style={{ backgroundColor: "var(--subtle-bg)" }}>
+                  <motion.div
+                    className="h-full rounded-full bg-gradient-to-r from-brand-400 to-soft-gold"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(completedCount / totalCalcs) * 100}%` }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
           <p className="text-slate-calm text-sm">
             Five analytical dimensions to understand your life sustainability patterns — and visualize the tradeoffs within them.
           </p>
@@ -187,6 +260,7 @@ export default function CalculatorsIndexPage() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {CALCULATORS.map((calc, i) => {
             const score = recentScores[calc.type];
+            const history = scoreHistory[calc.type] ?? [];
             const hasScore = score !== undefined;
             const scoreColor = hasScore ? getScoreColor(score) : null;
             return (
@@ -211,20 +285,25 @@ export default function CalculatorsIndexPage() {
                         <div className={`w-11 h-11 rounded-2xl flex items-center justify-center ${calc.color}`}>
                           <calc.icon className="w-5 h-5" />
                         </div>
-                        {hasScore ? (
-                          <ScoreRing score={score} size="sm" animate={false} showLabel={false} />
-                        ) : (
-                          <div className="flex flex-col items-center gap-0.5">
+                        <div className="flex flex-col items-end gap-1">
+                          {hasScore ? (
+                            <>
+                              <ScoreRing score={score} size="sm" animate={false} showLabel={false} />
+                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-green-600">
+                                <CheckCircle2 className="w-3 h-3" /> Done
+                              </span>
+                            </>
+                          ) : (
                             <div className="w-8 h-8 rounded-full border-2 border-dashed border-stone-200 flex items-center justify-center group-hover:border-soft-gold transition-colors">
                               <ArrowRight className="w-3.5 h-3.5 text-stone-300 group-hover:text-soft-gold transition-colors" />
                             </div>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
 
                       {/* Title + FREE badge */}
                       <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold text-matte-black">{calc.title}</h3>
+                        <h3 className="font-semibold" style={{ color: "var(--page-text)" }}>{calc.title}</h3>
                         <TierBadge tier="free" />
                       </div>
 
@@ -246,7 +325,35 @@ export default function CalculatorsIndexPage() {
                             {getScoreLabel(score)}
                           </span>
                         )}
+                        {history.length >= 2 && (
+                          <Sparkline values={history} color={scoreColor ?? "#C9A84C"} />
+                        )}
                       </div>
+
+                      {/* Score freshness / decay bar */}
+                      {hasScore && lastRunDates[calc.type] && (() => {
+                        const days = Math.floor((Date.now() - new Date(lastRunDates[calc.type]).getTime()) / 86400000);
+                        const freshPct = Math.max(0, Math.min(100, 100 - (days / 30) * 100));
+                        const isExpired = days >= 30;
+                        const isStale = days > 14;
+                        const barColor = freshPct >= 70 ? "#34D399" : freshPct >= 40 ? "#E8B84B" : freshPct >= 15 ? "#F97316" : "#EF4444";
+                        return (
+                          <div className="mb-3">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-[10px] text-stone-400">Score freshness</span>
+                              <span className={`text-[10px] font-semibold ${isExpired ? "text-red-500" : isStale ? "text-amber-600" : "text-emerald-600"}`}>
+                                {isExpired ? "Expired — recalculate" : isStale ? `${days}d ago — drifting` : `${days}d ago`}
+                              </span>
+                            </div>
+                            <div className="w-full h-1.5 bg-stone-200 rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all duration-500"
+                                style={{ width: `${freshPct}%`, backgroundColor: barColor }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })()}
 
                       {/* Premium locked features */}
                       <div className="space-y-1.5 mb-4 pt-3 border-t border-stone-100">
